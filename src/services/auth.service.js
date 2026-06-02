@@ -1,4 +1,4 @@
-const { User, PendingUser } = require('../models');
+const { User, PendingUser, PasswordReset } = require('../models');
 const admin = require('../config/firebase');
 const mailService = require('./mail.service');
 
@@ -163,6 +163,116 @@ class AuthService {
     await pendingUser.destroy();
 
     return { user, customToken };
+  }
+
+  /**
+   * Request password reset - Generate OTP and email it to the user
+   */
+  async forgotPasswordPending(email) {
+    if (!email) {
+      throw new Error('Email là bắt buộc.');
+    }
+
+    // Check if user exists in the local database
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      throw new Error('Email này không tồn tại trên hệ thống.');
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes expiry
+
+    // Save or update password reset request record
+    let resetRequest = await PasswordReset.findOne({ where: { email } });
+    if (resetRequest) {
+      resetRequest.otp = otp;
+      resetRequest.expiresAt = expiresAt;
+      await resetRequest.save();
+    } else {
+      resetRequest = await PasswordReset.create({
+        email,
+        otp,
+        expiresAt
+      });
+    }
+
+    // Send password recovery OTP email
+    await mailService.sendForgotPasswordOtpEmail(email, otp, user.displayName || '');
+    return { success: true, message: 'Mã OTP khôi phục mật khẩu đã được gửi đến email của bạn.' };
+  }
+
+  /**
+   * Verify forgot password OTP code
+   */
+  async verifyOtpForgot(email, otp) {
+    if (!email || !otp) {
+      throw new Error('Email và mã OTP là bắt buộc.');
+    }
+
+    const resetRequest = await PasswordReset.findOne({ where: { email } });
+    if (!resetRequest) {
+      throw new Error('Không tìm thấy yêu cầu khôi phục mật khẩu cho email này.');
+    }
+
+    // Verify OTP
+    if (resetRequest.otp !== otp) {
+      throw new Error('Mã OTP không chính xác.');
+    }
+
+    // Expiry check
+    if (new Date() > resetRequest.expiresAt) {
+      throw new Error('Mã OTP đã hết hạn. Vui lòng yêu cầu gửi lại mã mới.');
+    }
+
+    return { success: true, message: 'Xác thực OTP thành công. Vui lòng đặt mật khẩu mới.' };
+  }
+
+  /**
+   * Reset password and update in Firebase Auth
+   */
+  async resetPassword(email, otp, newPassword) {
+    if (!email || !otp || !newPassword) {
+      throw new Error('Email, mã OTP và mật khẩu mới là bắt buộc.');
+    }
+
+    const resetRequest = await PasswordReset.findOne({ where: { email } });
+    if (!resetRequest) {
+      throw new Error('Không tìm thấy yêu cầu khôi phục mật khẩu cho email này.');
+    }
+
+    // Double check OTP validity
+    if (resetRequest.otp !== otp) {
+      throw new Error('Mã OTP không chính xác.');
+    }
+
+    if (new Date() > resetRequest.expiresAt) {
+      throw new Error('Mã OTP đã hết hạn. Vui lòng gửi lại yêu cầu.');
+    }
+
+    // Retrieve the user from Firebase Auth by email to get their UID
+    let firebaseUser;
+    try {
+      firebaseUser = await admin.auth().getUserByEmail(email);
+    } catch (fbError) {
+      console.error('[Firebase Get User by Email Error]:', fbError);
+      throw new Error('Không tìm thấy tài khoản người dùng trên hệ thống xác thực.');
+    }
+
+    // Update password in Firebase Auth via Admin SDK
+    try {
+      await admin.auth().updateUser(firebaseUser.uid, {
+        password: newPassword
+      });
+    } catch (updateError) {
+      console.error('[Firebase Update Password Error]:', updateError);
+      throw new Error(`Không thể đặt lại mật khẩu mới: ${updateError.message}`);
+    }
+
+    // Clean up reset request record
+    await resetRequest.destroy();
+
+    return { success: true, message: 'Đổi mật khẩu thành công. Vui lòng đăng nhập lại với mật khẩu mới.' };
   }
 }
 

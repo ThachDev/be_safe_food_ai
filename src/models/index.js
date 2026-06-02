@@ -1,13 +1,16 @@
 const sequelize = require('../config/db');
 const User = require('./user.model');
 const PendingUser = require('./pending_user.model');
+const PasswordReset = require('./password_reset.model');
 
 const db = {
   sequelize,
   Sequelize: sequelize.constructor,
   User,
-  PendingUser
+  PendingUser,
+  PasswordReset
 };
+
 
 
 // If we add associations later, we can initialize them here:

@@ -124,6 +124,102 @@ class AuthController {
       });
     }
   }
+
+  /**
+   * Controller endpoint to handle forgot password (request OTP)
+   */
+  async forgotPassword(req, res) {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+          success: false,
+          code: ErrorCodes.VALIDATION_ERROR,
+          message: 'Email là bắt buộc.'
+        });
+      }
+
+      const result = await authService.forgotPasswordPending(email);
+
+      return res.status(HttpStatus.OK).json({
+        success: true,
+        message: result.message
+      });
+    } catch (error) {
+      console.error('[AuthController Forgot Password Request Error]:', error);
+      
+      return res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        code: ErrorCodes.VALIDATION_ERROR,
+        message: error.message
+      });
+    }
+  }
+
+  /**
+   * Controller endpoint to verify forgot password OTP code
+   */
+  async verifyOtpForgot(req, res) {
+    try {
+      const { email, otp } = req.body;
+
+      if (!email || !otp) {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+          success: false,
+          code: ErrorCodes.VALIDATION_ERROR,
+          message: 'Email và mã OTP là bắt buộc.'
+        });
+      }
+
+      const result = await authService.verifyOtpForgot(email, otp);
+
+      return res.status(HttpStatus.OK).json({
+        success: true,
+        message: result.message
+      });
+    } catch (error) {
+      console.error('[AuthController Verify OTP Forgot Error]:', error);
+      
+      return res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        code: ErrorCodes.VALIDATION_ERROR,
+        message: error.message
+      });
+    }
+  }
+
+  /**
+   * Controller endpoint to reset password with valid OTP code
+   */
+  async resetPassword(req, res) {
+    try {
+      const { email, otp, password } = req.body;
+
+      if (!email || !otp || !password) {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+          success: false,
+          code: ErrorCodes.VALIDATION_ERROR,
+          message: 'Email, mã OTP và mật khẩu mới là bắt buộc.'
+        });
+      }
+
+      const result = await authService.resetPassword(email, otp, password);
+
+      return res.status(HttpStatus.OK).json({
+        success: true,
+        message: result.message
+      });
+    } catch (error) {
+      console.error('[AuthController Reset Password Error]:', error);
+      
+      return res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        code: ErrorCodes.VALIDATION_ERROR,
+        message: error.message
+      });
+    }
+  }
 }
 
 module.exports = new AuthController();
