@@ -12,8 +12,64 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Custom Rich JSON Logger Middleware (Postman-style)
+app.use((req, res, next) => {
+  const start = Date.now();
+  const originalJson = res.json;
+  let responseBody;
+
+  // Capture response payload
+  res.json = function (body) {
+    responseBody = body;
+    return originalJson.apply(res, arguments);
+  };
+
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    
+    // Safely truncate large payloads (like Base64 strings) to keep console readable
+    const sanitize = (body) => {
+      if (!body || typeof body !== 'object') return body;
+      
+      const copy = JSON.parse(JSON.stringify(body));
+      
+      const truncateLongStrings = (obj) => {
+        for (const key in obj) {
+          if (typeof obj[key] === 'string' && obj[key].length > 150) {
+            obj[key] = `${obj[key].substring(0, 100)}... [truncated, length: ${obj[key].length}]`;
+          } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+            truncateLongStrings(obj[key]);
+          }
+        }
+      };
+      
+      truncateLongStrings(copy);
+      return copy;
+    };
+
+    console.log(`\n=================== [HTTP REQUEST/RESPONSE LOG] ===================`);
+    console.log(JSON.stringify({
+      timestamp: new Date().toISOString(),
+      method: req.method,
+      url: req.originalUrl,
+      headers: {
+        'content-type': req.headers['content-type'],
+        'user-agent': req.headers['user-agent'],
+        'authorization': req.headers.authorization ? 'Bearer [HIDDEN]' : undefined,
+      },
+      duration: `${duration}ms`,
+      status: res.statusCode,
+      requestBody: sanitize(req.body),
+      responseBody: sanitize(responseBody),
+    }, null, 2));
+    console.log(`====================================================================\n`);
+  });
+
+  next();
+});
 
 // Register routes
 app.use('/api/v1', apiRoutes);

@@ -27,7 +27,7 @@ const User = sequelize.define('User', {
     field: 'display_name'
   },
   photoUrl: {
-    type: DataTypes.TEXT,
+    type: DataTypes.TEXT('medium'),
     allowNull: true,
     field: 'photo_url'
   }

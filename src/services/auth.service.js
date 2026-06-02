@@ -33,7 +33,7 @@ class AuthService {
         user.displayName = name;
         hasChanges = true;
       }
-      if (user.photoUrl !== picture) {
+      if (picture && user.photoUrl !== picture) {
         user.photoUrl = picture;
         hasChanges = true;
       }
