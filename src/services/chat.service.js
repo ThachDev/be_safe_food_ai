@@ -10,8 +10,9 @@ const getGroq = () => {
   return new Groq({ apiKey });
 };
 
-// Model to use (free, fast)
-const GROQ_MODEL = 'llama-3.3-70b-versatile';
+// Model constants
+const GROQ_MODEL_TEXT = 'llama-3.3-70b-versatile';
+const GROQ_MODEL_VISION = 'llama-3.2-11b-vision-preview';
 
 const SYSTEM_PROMPT = 'Bạn là chuyên gia an toàn thực phẩm, dinh dưỡng và chọn lựa nguyên liệu sạch. Hãy trả lời bằng tiếng Việt một cách khoa học, chuyên nghiệp, ngắn gọn và hữu ích.';
 
@@ -26,36 +27,86 @@ class ChatService {
   /**
    * Send message to Groq AI and save conversation to DB
    */
-  static async analyzeFood(firebaseUid, prompt) {
+  static async analyzeFood(firebaseUid, sessionId, prompt, base64Image = null) {
     try {
       // 1. Look up the MySQL user
       const user = await findUser(firebaseUid);
       if (!user) throw new Error('Người dùng không tồn tại trong hệ thống.');
 
-      // 2. Save user's message to DB
+      if (!sessionId) {
+        throw new Error('sessionId is required');
+      }
+
+      // 2. Save user's message to DB (Only save text)
       await db.ChatMessage.create({
         userId: user.id,
+        sessionId: sessionId,
         message: prompt,
         isUser: true
       });
 
-      // 3. Call Groq AI
+      // 3. Prepare call Groq AI
       const groq = getGroq();
-      const completion = await groq.chat.completions.create({
-        model: GROQ_MODEL,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: prompt }
-        ],
-        temperature: 0.7,
-        max_tokens: 1024,
-      });
-
-      const responseText = completion.choices[0]?.message?.content ?? 'Không có phản hồi từ AI.';
+      let responseText = '';
+      
+      try {
+        if (base64Image) {
+          // Vision call
+          const completion = await groq.chat.completions.create({
+            model: GROQ_MODEL_VISION,
+            messages: [
+              { role: 'system', content: SYSTEM_PROMPT },
+              { 
+                role: 'user', 
+                content: [
+                  { type: 'text', text: prompt },
+                  { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${base64Image}` } }
+                ]
+              }
+            ],
+            temperature: 0.7,
+            max_tokens: 1024,
+          });
+          responseText = completion.choices[0]?.message?.content ?? 'Không có phản hồi từ AI.';
+        } else {
+          // Text-only call
+          const completion = await groq.chat.completions.create({
+            model: GROQ_MODEL_TEXT,
+            messages: [
+              { role: 'system', content: SYSTEM_PROMPT },
+              { role: 'user', content: prompt }
+            ],
+            temperature: 0.7,
+            max_tokens: 1024,
+          });
+          responseText = completion.choices[0]?.message?.content ?? 'Không có phản hồi từ AI.';
+        }
+      } catch (aiError) {
+        // Fallback if Vision model hits rate limit or fails
+        if (base64Image && (aiError.status === 429 || aiError.message.includes('rate limit') || aiError.message.includes('429'))) {
+          console.warn('[ChatService] Vision model rate limited, falling back to text-only model.');
+          const fallbackPrompt = `(Ghi chú: Người dùng có đính kèm ảnh nhưng hệ thống xử lý ảnh đang quá tải. Hãy trả lời dựa trên câu hỏi sau)\n\nCâu hỏi: ${prompt}`;
+          
+          const completion = await groq.chat.completions.create({
+            model: GROQ_MODEL_TEXT,
+            messages: [
+              { role: 'system', content: SYSTEM_PROMPT },
+              { role: 'user', content: fallbackPrompt }
+            ],
+            temperature: 0.7,
+            max_tokens: 1024,
+          });
+          responseText = completion.choices[0]?.message?.content ?? 'Không có phản hồi từ AI.';
+        } else {
+          // If text model fails or other error, throw it
+          throw aiError;
+        }
+      }
 
       // 4. Save AI's response to DB
       const aiMessage = await db.ChatMessage.create({
         userId: user.id,
+        sessionId: sessionId,
         message: responseText,
         isUser: false
       });
@@ -85,7 +136,7 @@ class ChatService {
       ];
 
       const completion = await groq.chat.completions.create({
-        model: GROQ_MODEL,
+        model: GROQ_MODEL_TEXT,
         messages,
         temperature: 0.7,
         max_tokens: 1024,
@@ -99,16 +150,48 @@ class ChatService {
   }
 
   /**
-   * Get chat history for a specific user
+   * Get chat history for a specific session
    */
-  static async getHistory(firebaseUid) {
+  static async getHistory(firebaseUid, sessionId) {
+    const user = await findUser(firebaseUid);
+    if (!user || !sessionId) return [];
+
+    return await db.ChatMessage.findAll({
+      where: { userId: user.id, sessionId: sessionId },
+      order: [['createdAt', 'ASC']]
+    });
+  }
+
+  /**
+   * Get all distinct sessions for a user, grouped/ordered by latest
+   */
+  static async getSessions(firebaseUid) {
     const user = await findUser(firebaseUid);
     if (!user) return [];
 
-    return await db.ChatMessage.findAll({
+    // Lấy tin nhắn cuối cùng của mỗi session
+    const sessions = await db.ChatMessage.findAll({
+      attributes: [
+        'sessionId',
+        [db.sequelize.fn('MAX', db.sequelize.col('createdAt')), 'lastActivity']
+      ],
       where: { userId: user.id },
-      order: [['createdAt', 'ASC']]
+      group: ['sessionId'],
+      order: [[db.sequelize.literal('lastActivity'), 'DESC']],
+      raw: true
     });
+
+    // Lấy nội dung tin nhắn đầu tiên (để làm title)
+    for (let session of sessions) {
+      const firstMsg = await db.ChatMessage.findOne({
+        where: { userId: user.id, sessionId: session.sessionId, isUser: true },
+        order: [['createdAt', 'ASC']],
+        attributes: ['message']
+      });
+      session.title = firstMsg ? (firstMsg.message.substring(0, 30) + '...') : 'New Chat';
+    }
+
+    return sessions;
   }
 }
 

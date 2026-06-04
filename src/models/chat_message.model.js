@@ -12,6 +12,11 @@ const ChatMessage = sequelize.define('ChatMessage', {
     allowNull: false,
     field: 'user_id'
   },
+  sessionId: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    field: 'session_id'
+  },
   message: {
     type: DataTypes.TEXT('long'),
     allowNull: false

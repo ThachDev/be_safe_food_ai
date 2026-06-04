@@ -6,14 +6,14 @@ class ChatController {
    */
   static async analyze(req, res) {
     try {
-      const { prompt } = req.body;
+      const { prompt, sessionId, base64Image } = req.body;
       const firebaseUid = req.user.uid;
 
-      if (!prompt) {
-        return res.status(400).json({ status: 'error', message: 'Prompt is required' });
+      if (!prompt || !sessionId) {
+        return res.status(400).json({ status: 'error', message: 'Prompt and sessionId are required' });
       }
 
-      const result = await ChatService.analyzeFood(firebaseUid, prompt);
+      const result = await ChatService.analyzeFood(firebaseUid, sessionId, prompt, base64Image);
       return res.status(200).json({ status: 'success', data: result });
     } catch (error) {
       console.error('ChatController error:', error);
@@ -46,11 +46,30 @@ class ChatController {
   static async getHistory(req, res) {
     try {
       const firebaseUid = req.user.uid;
-      const history = await ChatService.getHistory(firebaseUid);
+      const sessionId = req.query.sessionId;
+      if (!sessionId) {
+        return res.status(400).json({ status: 'error', message: 'sessionId is required' });
+      }
+      
+      const history = await ChatService.getHistory(firebaseUid, sessionId);
       return res.status(200).json({ status: 'success', data: history });
     } catch (error) {
       console.error('ChatController getHistory error:', error);
       return res.status(500).json({ status: 'error', message: 'Could not fetch history' });
+    }
+  }
+
+  /**
+   * Retrieve all chat sessions
+   */
+  static async getSessions(req, res) {
+    try {
+      const firebaseUid = req.user.uid;
+      const sessions = await ChatService.getSessions(firebaseUid);
+      return res.status(200).json({ status: 'success', data: sessions });
+    } catch (error) {
+      console.error('ChatController getSessions error:', error);
+      return res.status(500).json({ status: 'error', message: 'Could not fetch sessions' });
     }
   }
 }
