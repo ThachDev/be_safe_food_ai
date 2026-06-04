@@ -2,11 +2,12 @@ const express = require('express');
 const router = express.Router();
 const authRoutes = require('./auth.route');
 const userRoutes = require('./user.route');
+const chatRoutes = require('./chat.route');
 
 // Mount routes
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
-
+router.use('/chat', chatRoutes);
 // Health check endpoint
 router.get('/health', (req, res) => {
   res.status(200).json({

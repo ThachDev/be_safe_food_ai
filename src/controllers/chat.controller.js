@@ -1,0 +1,58 @@
+const ChatService = require('../services/chat.service');
+
+class ChatController {
+  /**
+   * Handle sending a prompt to Gemini (chat with history)
+   */
+  static async analyze(req, res) {
+    try {
+      const { prompt } = req.body;
+      const firebaseUid = req.user.uid;
+
+      if (!prompt) {
+        return res.status(400).json({ status: 'error', message: 'Prompt is required' });
+      }
+
+      const result = await ChatService.analyzeFood(firebaseUid, prompt);
+      return res.status(200).json({ status: 'success', data: result });
+    } catch (error) {
+      console.error('ChatController error:', error);
+      return res.status(500).json({ status: 'error', message: error.message || 'Internal server error' });
+    }
+  }
+
+  /**
+   * Handle general AI analysis (Anti-Fake, Additives, no DB save)
+   */
+  static async analyzeGeneral(req, res) {
+    try {
+      const { prompt, base64Image } = req.body;
+
+      if (!prompt) {
+        return res.status(400).json({ status: 'error', message: 'Prompt is required' });
+      }
+
+      const reply = await ChatService.analyzeGeneral(prompt, base64Image || null);
+      return res.status(200).json({ status: 'success', data: { reply } });
+    } catch (error) {
+      console.error('ChatController analyzeGeneral error:', error);
+      return res.status(500).json({ status: 'error', message: error.message || 'Internal server error' });
+    }
+  }
+
+  /**
+   * Retrieve chat history
+   */
+  static async getHistory(req, res) {
+    try {
+      const firebaseUid = req.user.uid;
+      const history = await ChatService.getHistory(firebaseUid);
+      return res.status(200).json({ status: 'success', data: history });
+    } catch (error) {
+      console.error('ChatController getHistory error:', error);
+      return res.status(500).json({ status: 'error', message: 'Could not fetch history' });
+    }
+  }
+}
+
+module.exports = ChatController;
