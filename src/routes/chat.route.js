@@ -10,5 +10,6 @@ router.post('/analyze', ChatController.analyze);
 router.post('/analyze-general', ChatController.analyzeGeneral);
 router.get('/history', ChatController.getHistory);
 router.get('/sessions', ChatController.getSessions);
+router.delete('/sessions/:sessionId', ChatController.deleteSession);
 
 module.exports = router;

@@ -72,6 +72,25 @@ class ChatController {
       return res.status(500).json({ status: 'error', message: 'Could not fetch sessions' });
     }
   }
+
+  /**
+   * Delete a chat session
+   */
+  static async deleteSession(req, res) {
+    try {
+      const firebaseUid = req.user.uid;
+      const sessionId = req.params.sessionId;
+      if (!sessionId) {
+        return res.status(400).json({ status: 'error', message: 'sessionId is required' });
+      }
+
+      await ChatService.deleteSession(firebaseUid, sessionId);
+      return res.status(200).json({ status: 'success', message: 'Session deleted' });
+    } catch (error) {
+      console.error('ChatController deleteSession error:', error);
+      return res.status(500).json({ status: 'error', message: 'Could not delete session' });
+    }
+  }
 }
 
 module.exports = ChatController;
