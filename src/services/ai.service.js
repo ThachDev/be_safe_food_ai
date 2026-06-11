@@ -16,37 +16,28 @@ class AIService {
     const groq = getGroq();
     
     let systemInstructions = '';
-    if (scanType === 'food') {
+    if (scanType === 'food_check') {
       systemInstructions = 
-        'PHÁT CHẨN TRUY TÌM HÀNG GIẢ & CẢNH BÁO AN TOÀN VẬT LÝ THỰC PHẨM (VIỆT NAM)\n' +
-        'Bạn là một Chuyên gia Giám định Bao bì Quốc tế, Nhà Độc chất học Thực phẩm và Trưởng bộ phận Kiểm tra Chất lượng của Cục An toàn Thực phẩm. Nhiệm vụ của bạn là kiểm tra hình ảnh được cung cấp một cách nghiêm ngặt, chi tiết và có tính khoa học cao để cảnh báo nguy cơ hàng nhái, hàng kém chất lượng, và thực phẩm bẩn tại Việt Nam.\n\n' +
+        'PHÂN TÍCH ĐỘ TƯƠI NGON, TÌNH TRẠNG THỰC PHẨM & ĐỌC HẠN SỬ DỤNG (VIỆT NAM)\n' +
+        'Bạn là một Chuyên gia Vệ sinh An toàn Thực phẩm và Đầu bếp Cao cấp. Nhiệm vụ của bạn là kiểm tra hình ảnh trực quan của đồ ăn, thực phẩm hoặc bao bì chứa hạn sử dụng để đưa ra cảnh báo về độ an toàn trước khi sử dụng.\n\n' +
         'QUY TRÌNH PHÂN TÍCH HÌNH ẢNH:\n' +
-        '1. ĐỐI CHIẾU NGOẠI QUAN CHỐNG GIẢ:\n' +
-        '   - Soi xét độ sắc nét của chữ in, logo, căn chỉnh lề bao bì (các hàng nhái thường in mờ, nhòe, lệch chuẩn, sai lỗi chính tả nhỏ).\n' +
-        '   - Thẩm định tình trạng nắp đậy, đai an toàn, màng co niêm phong (lỏng lẻo, có vết trầy xước, keo dán thủ công, hoặc dấu hiệu tái sử dụng vỏ chai).\n' +
-        '   - Phân tích sự hiện diện và chất lượng của tem chống hàng giả (tem Hologram 7 màu, tem mã khóa phản quang, QR code cào).\n' +
-        '2. GIÁM ĐỊNH TRACEABILITY (TRUY XUẤT):\n' +
-        '   - Kiểm tra ngày sản xuất (NSX) và hạn sử dụng (HSD). Nhận diện dấu hiệu tẩy xóa, in đè số, dán đè nhãn phụ giả mạo.\n' +
-        '3. PHÁT HIỆN ĐỘC CHẤT & CHẤT LƯỢNG NỘI DUNG (Dựa trên dữ liệu trực quan):\n' +
-        '   - Nhận diện màu sắc bất thường của thực phẩm (ví dụ: đỏ lòe loẹt nghi hóa chất công nghiệp Rhodamine B, vàng rực nghi chứa Auramine O - vàng ô).\n' +
-        '   - Nhận diện trạng thái cơ lý: chảy nước, nổi mốc, sủi bọt khí bất thường trong chai nước ngọt/bia, vón cục ở sữa bột.\n' +
-        '4. ĐÁNH GIÁ NGUY CƠ HÓA CHẤT CẤM TẠI VN:\n' +
-        '   - Đưa ra cảnh báo cụ thể nếu sản phẩm thuộc nhóm dễ bị pha trộn hàn borax (hàn phe), formaldehyde (ướp tươi hải sản), lưu huỳnh xông khô, hay thuốc bảo vệ thực vật vượt ngưỡng.\n\n' +
+        '1. ĐÁNH GIÁ ĐỘ TƯƠI NGON & ÔI THIU (Nếu ảnh là đồ ăn):\n' +
+        '   - Nhận diện các dấu hiệu nấm mốc, đốm trắng/xanh bất thường trên bề mặt.\n' +
+        '   - Phân tích sự biến đổi màu sắc hoặc kết cấu (ví dụ: thịt thâm đen, rau héo úa, hoa quả nẫu hỏng).\n' +
+        '2. TÌM & ĐỌC HẠN SỬ DỤNG (Nếu ảnh là bao bì có in NSX/HSD):\n' +
+        '   - Trích xuất thông tin ngày sản xuất và hạn sử dụng (nếu tìm thấy).\n' +
+        '   - Đánh giá xem sản phẩm còn an toàn để sử dụng hay không dựa trên ngày hiện tại.\n' +
+        '3. ĐÁNH GIÁ NGUY CƠ NGỘ ĐỘC:\n' +
+        '   - Đưa ra cảnh báo rủi ro về ngộ độc nếu sử dụng thực phẩm trong tình trạng được phân tích.\n\n' +
         'CẤU TRÚC BÀI VIẾT PHÂN TÍCH CHI TIẾT (Bằng tiếng Việt sạch đẹp, chuyên nghiệp):\n' +
-        '### 🛡️ KẾT QUẢ GIÁM ĐỊNH BAO BÌ & ĐỘC CHẤT\n' +
-        '- **Phân tích dấu hiệu nhận diện hình ảnh:** (Nêu cụ thể những gì thấy trên ảnh: logo, chữ in, nắp chai, nhãn mác...)\n' +
-        '- **Mức độ rủi ro hàng giả/hàng nhái:** (Rất cao / Trung bình / Thấp - Giải thích lý do dựa trên đặc điểm trực quan)\n' +
-        '- **Nguy cơ hóa chất & Vệ sinh:** (Liệt kê các rủi ro hóa chất cấm, chất bảo quản độc hại hoặc vi sinh vật tương ứng với nhóm thực phẩm này tại thị trường Việt Nam)\n\n' +
-        '### 🔍 CHECKLIST KIỂM TRA CẢM QUAN TẠI CHỖ (VẬT LÝ & HÓA HỌC)\n' +
-        '(Cung cấp 3-5 bước kiểm tra vật lý thực tế mà app không thể tự làm, hướng dẫn cực kỳ trực quan và thực tiễn để người dùng tự xác thực tại chỗ)\n' +
-        '1. **[Kiểm tra sờ nắn]:** ...\n' +
-        '2. **[Kiểm tra tem/nhãn]:** ...\n' +
-        '3. **[Phản ứng thử nhanh]:** (ví dụ: dùng nghệ thử borax, ngâm nước xem màu trôi, hoặc cách nhận biết mùi vị hóa chất/ôi thiu)...\n\n' +
-        '### 🏥 ĐÁNH GIÁ LÂM SÀNG & KHUYẾN NGHỊ SỨC KHỎE\n' +
-        '- **Nhóm đối tượng nhạy cảm:** (Khuyến cáo đặc biệt cho trẻ em, bà bầu, người cao tuổi hoặc người dị ứng)\n' +
-        '- **Hướng dẫn xử lý khẩn cấp:** (Các triệu chứng ngộ độc cấp tính cần phát hiện ngay và hành động y tế khẩn cấp)\n\n' +
+        '### 🛡️ KẾT QUẢ ĐÁNH GIÁ TRỰC QUAN & HẠN SỬ DỤNG\n' +
+        '- **Tình trạng thực tế:** (Mô tả chi tiết những gì thấy trên ảnh đồ ăn hoặc chữ hạn sử dụng)\n' +
+        '- **Mức độ an toàn:** (Rất an toàn / Cần lưu ý / Nguy hiểm - Giải thích lý do)\n' +
+        '- **Thông tin HSD/NSX:** (Ghi rõ hạn sử dụng nếu có thể đọc được)\n\n' +
+        '### 🔍 KHUYẾN NGHỊ BẢO QUẢN & SỬ DỤNG\n' +
+        '(Đưa ra 2-3 lời khuyên thiết thực để bảo quản đúng cách hoặc xử lý nếu đồ ăn có dấu hiệu hỏng)\n\n' +
         '### ⚠️ TUYÊN BỐ MIỄN TRỪ TRÁCH NHIỆM (DISCLAIMER)\n' +
-        '*Kết quả phân tích này dựa trên phân tích hình ảnh kỹ thuật số bằng AI và thông tin phổ quát về thị trường. Đây là công cụ hỗ trợ sàng lọc ban đầu, không thay thế cho các kiểm nghiệm lâm sàng tại phòng thí nghiệm hoặc quyết định từ cơ quan quản lý an toàn thực phẩm.*\n\n';
+        '*Kết quả phân tích này dựa trên đánh giá hình ảnh bằng AI. Đây chỉ là thông tin tham khảo, nếu bạn thấy thực phẩm có mùi vị lạ, hãy bỏ ngay lập tức để đảm bảo an toàn.*\n\n';
     } else {
       systemInstructions = 
         'PHÂN TÍCH OCR THÀNH PHẦN, CHẤT PHỤ GIA & AN TOÀN SINH HỌC (TIÊU CHUẨN QUỐC TẾ)\n' +
