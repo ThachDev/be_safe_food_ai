@@ -83,8 +83,8 @@ class AIService {
 
     const prompt = 
       systemInstructions +
-      'YÊU CẦU ĐỊNH DẠNG BẮT BUỘC: Hãy bắt đầu câu trả lời bằng cấu trúc chính xác sau (bao gồm cả dấu ngoặc vuông, không thêm chữ gì trước dòng này):\n' +
-      '[TÊN SẢN PHẨM]: <Tên cụ thể của sản phẩm hoặc thực phẩm nhận diện được>\n' +
+      'YÊU CẦU ĐỊNH DẠNG BẮT BUỘC: Hãy bắt đầu câu trả lời bằng cấu trúc chính xác sau (bao gồm cả dấu ngoặc vuông, TUYỆT ĐỐI KHÔNG THAY ĐỔI CÁC TỪ KHÓA TRONG NGOẶC VUÔNG, KHÔNG thay chữ "TÊN SẢN PHẨM" thành chữ khác):\n' +
+      '[TÊN SẢN PHẨM]: <Điền tên cụ thể của sản phẩm hoặc thực phẩm nhận diện được. KHÔNG ghi chung chung là "Sản phẩm">\n' +
       '[DANH MỤC]: <Gia vị / Sữa / Thực phẩm chức năng / Đồ ăn tươi sống / Đồ uống / Bánh kẹo / Khác>\n' +
       '[ĐIỂM SỐ]: <Điểm số từ 1.0 đến 10.0, ví dụ: 8.5>\n' +
       '[ĐÁNH GIÁ]: <Tuyệt đối an toàn / An toàn sử dụng / Nghi ngờ hàng nhái / Chứa phụ gia nguy cơ / Không an toàn>\n' +
