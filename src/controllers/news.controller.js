@@ -13,8 +13,9 @@ exports.getNewsWarnings = async (req, res, next) => {
     const rssUrl = encodeURI('https://news.google.com/rss/search?q=thực+phẩm+giả+OR+hoá+chất+độc+hại+OR+ngộ+độc+thực+phẩm&hl=vi&gl=VN&ceid=VN:vi');
     const feed = await parser.parseURL(rssUrl);
 
-    // Map and format the result
-    const articles = feed.items.slice(0, 15).map(item => ({
+    const sortedItems = feed.items.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+
+    const articles = sortedItems.slice(0, 15).map(item => ({
       title: item.title,
       link: item.link,
       pubDate: item.pubDate,
