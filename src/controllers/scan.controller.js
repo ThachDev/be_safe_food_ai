@@ -1,6 +1,7 @@
 const db = require('../models');
 const { HttpStatus } = require('../constants');
 const AIService = require('../services/ai.service');
+const CloudinaryService = require('../services/cloudinary.service');
 
 class ScanController {
   /**
@@ -26,40 +27,44 @@ class ScanController {
       }
 
       console.log(`[ScanController.analyzeScan] Running AI Vision check for mode: ${scanType}`);
-      const aiResult = await AIService.analyzeImage(scanType, base64Image);
+      const [aiResult, uploadedImageUrl] = await Promise.all([
+        AIService.analyzeImage(scanType, base64Image),
+        CloudinaryService.uploadImage(base64Image)
+      ]);
 
-      // Parse structured header fields using RegExp
       let title = 'Sản phẩm';
       let category = 'Thực phẩm';
       let rating = '7.5';
       let scoreText = 'Cần lưu ý';
       let safeLevel = 'Chưa xác định';
+      let cleanedResult = aiResult;
 
-      const titleMatch = aiResult.match(/\[TÊN SẢN PHẨM\]:\s*([^\n]+)/);
-      if (titleMatch) title = titleMatch[1].trim();
+      try {
+        const parsed = JSON.parse(aiResult);
+        
+        // Phát hiện nếu không phải thực phẩm
+        if (parsed.isFood === false) {
+          return res.status(HttpStatus.BAD_REQUEST).json({
+            success: false,
+            message: 'Hình ảnh này dường như không phải là thực phẩm hoặc bao bì. Vui lòng chụp lại.'
+          });
+        }
 
-      const categoryMatch = aiResult.match(/\[DANH MỤC\]:\s*([^\n]+)/);
-      if (categoryMatch) category = categoryMatch[1].trim();
-
-      const ratingMatch = aiResult.match(/\[ĐIỂM SỐ\]:\s*([^\n]+)/);
-      if (ratingMatch) {
-        rating = ratingMatch[1].replace('/10', '').trim();
+        title = parsed.title || title;
+        category = parsed.category || category;
+        rating = parsed.rating || rating;
+        scoreText = parsed.scoreText || scoreText;
+        safeLevel = parsed.safeLevel || safeLevel;
+        
+        // Save the details object as a JSON string to be sent to frontend
+        if (parsed.details) {
+          cleanedResult = JSON.stringify(parsed.details);
+        }
+      } catch (parseError) {
+        console.warn('[ScanController.analyzeScan] Could not parse AI result as JSON. Using fallback.', parseError);
+        // Fallback for unexpected format
+        cleanedResult = aiResult;
       }
-
-      const scoreMatch = aiResult.match(/\[ĐÁNH GIÁ\]:\s*([^\n]+)/);
-      if (scoreMatch) scoreText = scoreMatch[1].trim();
-
-      const summaryMatch = aiResult.match(/\[TÓM TẮT\]:\s*([^\n]+)/);
-      if (summaryMatch) safeLevel = summaryMatch[1].trim();
-
-      // Clean the AI result to remove the parse header tags
-      const cleanedResult = aiResult
-        .replace(/\[TÊN SẢN PHẨM\]:[^\n]*\n?/g, '')
-        .replace(/\[DANH MỤC\]:[^\n]*\n?/g, '')
-        .replace(/\[ĐIỂM SỐ\]:[^\n]*\n?/g, '')
-        .replace(/\[ĐÁNH GIÁ\]:[^\n]*\n?/g, '')
-        .replace(/\[TÓM TẮT\]:[^\n]*\n?/g, '')
-        .trim();
 
       return res.status(HttpStatus.OK).json({
         success: true,
@@ -70,7 +75,7 @@ class ScanController {
           scoreText,
           safeLevel,
           aiResult: cleanedResult || aiResult,
-          base64Image
+          imageUrl: uploadedImageUrl
         }
       });
     } catch (error) {

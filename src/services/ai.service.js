@@ -18,69 +18,64 @@ class AIService {
     let systemInstructions = '';
     if (scanType === 'food_check') {
       systemInstructions = 
-        'PHÂN TÍCH ĐỘ TƯƠI NGON, TÌNH TRẠNG THỰC PHẨM & ĐỌC HẠN SỬ DỤNG (VIỆT NAM)\n' +
-        'Bạn là một Chuyên gia Vệ sinh An toàn Thực phẩm và Đầu bếp Cao cấp. Nhiệm vụ của bạn là kiểm tra hình ảnh trực quan của đồ ăn, thực phẩm hoặc bao bì chứa hạn sử dụng để đưa ra cảnh báo về độ an toàn trước khi sử dụng.\n\n' +
-        'QUY TRÌNH PHÂN TÍCH HÌNH ẢNH:\n' +
-        '1. ĐÁNH GIÁ ĐỘ TƯƠI NGON & ÔI THIU (Nếu ảnh là đồ ăn):\n' +
-        '   - Nhận diện các dấu hiệu nấm mốc, đốm trắng/xanh bất thường trên bề mặt.\n' +
-        '   - Phân tích sự biến đổi màu sắc hoặc kết cấu (ví dụ: thịt thâm đen, rau héo úa, hoa quả nẫu hỏng).\n' +
-        '2. TÌM & ĐỌC HẠN SỬ DỤNG (Nếu ảnh là bao bì có in NSX/HSD):\n' +
-        '   - Trích xuất thông tin ngày sản xuất và hạn sử dụng (nếu tìm thấy).\n' +
-        '   - Đánh giá xem sản phẩm còn an toàn để sử dụng hay không dựa trên ngày hiện tại.\n' +
-        '3. ĐÁNH GIÁ NGUY CƠ NGỘ ĐỘC:\n' +
-        '   - Đưa ra cảnh báo rủi ro về ngộ độc nếu sử dụng thực phẩm trong tình trạng được phân tích.\n\n' +
-        'CẤU TRÚC BÀI VIẾT PHÂN TÍCH CHI TIẾT (Bằng tiếng Việt sạch đẹp, chuyên nghiệp):\n' +
-        '### 🛡️ KẾT QUẢ ĐÁNH GIÁ TRỰC QUAN & HẠN SỬ DỤNG\n' +
-        '- **Tình trạng thực tế:** (Mô tả chi tiết những gì thấy trên ảnh đồ ăn hoặc chữ hạn sử dụng)\n' +
-        '- **Mức độ an toàn:** (Rất an toàn / Cần lưu ý / Nguy hiểm - Giải thích lý do)\n' +
-        '- **Thông tin HSD/NSX:** (Ghi rõ hạn sử dụng nếu có thể đọc được)\n\n' +
-        '### 🔍 KHUYẾN NGHỊ BẢO QUẢN & SỬ DỤNG\n' +
-        '(Đưa ra 2-3 lời khuyên thiết thực để bảo quản đúng cách hoặc xử lý nếu đồ ăn có dấu hiệu hỏng)\n\n' +
-        '### ⚠️ TUYÊN BỐ MIỄN TRỪ TRÁCH NHIỆM (DISCLAIMER)\n' +
-        '*Kết quả phân tích này dựa trên đánh giá hình ảnh bằng AI. Đây chỉ là thông tin tham khảo, nếu bạn thấy thực phẩm có mùi vị lạ, hãy bỏ ngay lập tức để đảm bảo an toàn.*\n\n';
+        'Phân tích độ tươi ngon, tình trạng thực phẩm và hạn sử dụng\n' +
+        'Bạn là một Chuyên gia Vệ sinh An toàn Thực phẩm. Nhiệm vụ của bạn là kiểm tra hình ảnh trực quan để đưa ra cảnh báo an toàn.\n\n' +
+        'QUY TẮC SỐ 1: BẮT BUỘC PHÂN BIỆT THỰC PHẨM. Nếu hình ảnh KHÔNG PHẢI LÀ ĐỒ ĂN/THỨC UỐNG (ví dụ: bột giấy, giấy vệ sinh, hóa mỹ phẩm, đồ dùng...), HÃY ĐÁNH GIÁ ĐÂY LÀ "Không phải thực phẩm", KHÔNG ĐƯỢC PHÉP CHẤM ĐIỂM AN TOÀN CHO CHÚNG NHƯ THỰC PHẨM.\n\n' +
+        'Quy trình phân tích:\n' +
+        '1. Đánh giá chất lượng thực phẩm: Tìm nấm mốc, đốm trắng, héo úa, ôi thiu, biến đổi màu sắc.\n' +
+        '2. Kiểm tra hạn sử dụng: Tìm ngày sản xuất/HSD. Suy luận xem sản phẩm còn an toàn không.\n' +
+        '3. Đưa ra lời khuyên: Phải mang tính ứng dụng cao, ví dụ cách bảo quản để tươi lâu hơn, cách sơ chế loại bỏ độc tố.';
     } else {
       systemInstructions = 
-        'PHÂN TÍCH OCR THÀNH PHẦN, CHẤT PHỤ GIA & AN TOÀN SINH HỌC (TIÊU CHUẨN QUỐC TẾ)\n' +
-        'Bạn là một Chuyên gia Độc chất học Thực phẩm, Chuyên gia Dinh dưỡng Lâm sàng cấp cao và Chuyên viên Đánh giá Tiêu chuẩn An toàn của EFSA (Cục An toàn Thực phẩm Châu Âu). Hãy thực hiện quét OCR chuyên sâu bảng thành phần (Ingredients) và thông tin dinh dưỡng trên nhãn ảnh để bóc tách chi tiết các rủi ro sức khỏe cho người tiêu dùng Việt Nam.\n\n' +
-        'QUY TRÌNH PHÂN TÍCH BẢNG THÀNH PHẦN:\n' +
-        '1. ĐỊNH DANH CHI TIẾT PHỤ GIA & MÃ E-CODE:\n' +
-        '   - Truy vết tất cả các mã số phụ gia E-code (ví dụ: E621, E211, E102, E951, E320...) hoặc tên hóa học tương đương.\n' +
-        '   - Phân loại rõ chức năng: Chất tạo ngọt nhân tạo, chất bảo quản chống mốc, chất điều vị hóa học, chất tạo màu tổng hợp, chất nhũ hóa.\n' +
-        '2. CHỈ RA VÊNH PHÁP LÝ QUỐC TẾ (CRITICAL):\n' +
-        '   - So sánh chi tiết chất nào được phép dùng theo Thông tư 24/2019/TT-BYT của Bộ Y tế Việt Nam nhưng bị **CẤM** hoặc **HẠN CHẾ NGHIÊM NGẶT** ở EU (EFSA) hay Mỹ (FDA) (Ví dụ: Titanium Dioxide E171 bị cấm ở EU do lo ngại hủy hoại gen; E102/E110 tăng động ở trẻ em; các chất bảo quản gây rối loạn nội tiết).\n' +
-        '3. ĐÁNH GIÁ CHỈ SỐ DINH DƯỠNG XẤU (NUTRITIONAL RED FLAGS):\n' +
-        '   - Đường (Sugar): Kiểm tra lượng đường tự do (Free Sugar) > 10g/100g.\n' +
-        '   - Muối (Sodium/Natri): Kiểm tra lượng Natri cực đoan > 400mg/100g (nguy cơ tăng huyết áp).\n' +
-        '   - Chất béo trans (Trans fat): Kiểm tra sự xuất hiện của dầu hydro hóa một phần (Partially hydrogenated oil).\n' +
-        '4. MA TRẬN NHẠY CẢM ĐỐI TƯỢNG (TARGETED WARNINGS):\n' +
-        '   - Tác động lên hệ vi sinh đường ruột và hội chứng chuyển hóa.\n' +
-        '   - Chỉ rõ rủi ro với Trẻ em, Phụ nữ mang thai, Người tiểu đường, Cao huyết áp, Gút (Gout), suy thận.\n\n' +
-        'CẤU TRÚC BÀI VIẾT PHÂN TÍCH CHI TIẾT (Bằng tiếng Việt sạch đẹp, chuyên nghiệp):\n' +
-        '### 📊 HỒ SƠ CHẤT PHỤ GIA (ADDITIVE PROFILE)\n' +
-        '| Mã Phụ Gia (E-Code) | Tên Hóa Học | Phân Loại & Chức Năng | Độc Tính & Mức Độ Nguy Cơ (Thấp/TB/Cao) | Quy Định EU/FDA | \n' +
-        '| --- | --- | --- | --- | --- |\n' +
-        '(Lập bảng chi tiết tất cả các phụ gia phát hiện được. Nếu không có phụ gia, nêu rõ thành phần tự nhiên)\n\n' +
-        '### ⚡ CẢNH BÁO DINH DƯỠNG & RỦI RO SỨC KHỎE LÂM SÀNG\n' +
-        '- **Chỉ số dinh dưỡng nguy hiểm:** (Phân tích mức Đường, Sodium, Trans fat, Chất béo bão hòa có trong nhãn sản phẩm)\n' +
-        '- **Tác hại lâu dài (Mãn tính):** (Tác động đến gan, thận, hệ tiêu hóa, kháng insulin, hoặc nguy cơ ung thư tích tụ)\n' +
-        '- **Vênh tiêu chuẩn pháp lý:** (Liệt kê rõ các chất trong sản phẩm được phép dùng ở VN nhưng thế giới cấm hoặc hạn chế)\n\n' +
-        '### 🤰 MA TRẬN NHẠY CẢM ĐỐI TƯỢNG (SENSITIVITY MATRIX)\n' +
-        '- **Trẻ em:** (Rủi ro tăng động ADHD, dị ứng dị ứng da, hen suyễn, chậm phát triển trí tuệ)\n' +
-        '- **Mẹ bầu & Cho con bú:** (Nguy cơ ảnh hưởng thai nhi, sẩy thai, dị tật bẩm sinh hoặc cản trước hấp thu sắt/canxi)\n' +
-        '- **Người bệnh nền (Tiểu đường, Tim mạch, Gút, Dị ứng):** (Cảnh báo cụ thể với lượng đường, natri, hoặc gluten/sulfite)\n\n' +
-        '### ⚠️ TUYÊN BỐ MIỄN TRỪ TRÁCH NHIỆM (DISCLAIMER)\n' +
-        '*Kết quả phân tích này dựa trên phân tích hình ảnh và bảng thành phần dinh dưỡng được in trên nhãn sản phẩm bằng công nghệ AI. Dữ liệu này chỉ mang tính chất tham khảo giáo dục và hỗ trợ phòng ngừa rủi ro dinh dưỡng ban đầu, không thay thế cho các chẩn đoán hoặc chỉ định y khoa từ bác sĩ điều trị.*\n\n';
+        'Phân tích thành phần, chất phụ gia & an toàn sinh học\n' +
+        'Bạn là Chuyên gia Độc chất học Thực phẩm & Dinh dưỡng Lâm sàng. Hãy quét bao bì và KẾT HỢP VỚI KIẾN THỨC CHUYÊN MÔN CỦA BẠN về loại sản phẩm đó để bóc tách rủi ro sức khỏe.\n\n' +
+        'QUY TẮC SỐ 1: NẾU KHÔNG PHẢI THỰC PHẨM (VD: Giấy vệ sinh), HÃY CẢNH BÁO NGAY VÀ KHÔNG PHÂN TÍCH DINH DƯỠNG.\n' +
+        'QUY TẮC SỐ 2: TUYỆT ĐỐI KHÔNG TRẢ LỜI "Không rõ" hay "Không có thông tin". Nếu bao bì không ghi định lượng, BẠN PHẢI TỰ DỰ ĐOÁN VÀ ĐÁNH GIÁ DỰA TRÊN BẢN CHẤT CỦA SẢN PHẨM ĐÓ TRÊN THỰC TẾ (Ví dụ: Nhìn thấy "Muối chấm" là phải cảnh báo Natri rất cao; "Mì tôm" là cảnh báo Trans fat; "Nước ngọt" là cảnh báo Đường tự do).\n\n' +
+        '1. Định danh phụ gia: Phân tích các E-code hoặc chất hóa học có mặt. Chỉ ra mức độ độc hại.\n' +
+        '2. Đánh giá rủi ro dinh dưỡng: Đưa ra nhận định sắc bén về lượng Đường, Muối, Chất béo.\n' +
+        '3. Cảnh báo đối tượng: Đưa ra lời khuyên THỰC TẾ, CỤ THỂ cho Trẻ em, Mẹ bầu, Người cao huyết áp/Tiểu đường/Gout. KHÔNG nói chung chung.';
     }
 
     const prompt = 
       systemInstructions +
-      'YÊU CẦU ĐỊNH DẠNG BẮT BUỘC: Hãy bắt đầu câu trả lời bằng cấu trúc chính xác sau (bao gồm cả dấu ngoặc vuông, TUYỆT ĐỐI KHÔNG THAY ĐỔI CÁC TỪ KHÓA TRONG NGOẶC VUÔNG, KHÔNG thay chữ "TÊN SẢN PHẨM" thành chữ khác):\n' +
-      '[TÊN SẢN PHẨM]: <Điền tên cụ thể của sản phẩm hoặc thực phẩm nhận diện được. KHÔNG ghi chung chung là "Sản phẩm">\n' +
-      '[DANH MỤC]: <Gia vị / Sữa / Thực phẩm chức năng / Đồ ăn tươi sống / Đồ uống / Bánh kẹo / Khác>\n' +
-      '[ĐIỂM SỐ]: <Điểm số từ 1.0 đến 10.0, ví dụ: 8.5>\n' +
-      '[ĐÁNH GIÁ]: <Tuyệt đối an toàn / An toàn sử dụng / Nghi ngờ hàng nhái / Chứa phụ gia nguy cơ / Không an toàn>\n' +
-      '[TÓM TẮT]: <Tóm tắt ngắn gọn trong 1 dòng các nguy cơ hoặc lưu ý lớn nhất>\n\n' +
-      'Sau đó mới viết nội dung phân tích chi tiết đầy đủ bằng Tiếng Việt bên dưới. Hãy trình bày nội dung sạch đẹp, dễ đọc.';
+      '\n\nYêu cầu định dạng bắt buộc: BẠN BẮT BUỘC PHẢI TRẢ VỀ DUY NHẤT 1 CHUỖI JSON HỢP LỆ (TUYỆT ĐỐI KHÔNG TRẢ VỀ MARKDOWN HAY BẤT KỲ VĂN BẢN NÀO KHÁC). Hãy dùng cấu trúc JSON sau:\n' +
+      (scanType === 'food_check' ? 
+      '{\n' +
+      '  "isFood": <true nếu là thực phẩm/đồ uống/bao bì, false nếu là đồ vật lạ>,\n' +
+      '  "title": "<Điền tên cụ thể của sản phẩm/thực phẩm. KHÔNG ghi chung chung>",\n' +
+      '  "category": "<Gia vị / Sữa / Thực phẩm chức năng / Đồ ăn tươi sống / Đồ uống / Bánh kẹo / Khác>",\n' +
+      '  "rating": "<Điểm số an toàn từ 1.0 đến 10.0>",\n' +
+      '  "scoreText": "<Tuyệt đối an toàn / An toàn sử dụng / Cần lưu ý / Nguy hiểm / Không an toàn>",\n' +
+      '  "safeLevel": "<Tóm tắt 1 dòng các nguy cơ lớn nhất>",\n' +
+      '  "details": {\n' +
+      '    "visualResult": "<Mô tả chi tiết những gì thấy trên ảnh>",\n' +
+      '    "safetyLevelReason": "<Giải thích lý do cho mức độ an toàn>",\n' +
+      '    "expiryInfo": "<Ghi rõ hạn sử dụng nếu đọc được>",\n' +
+      '    "recommendations": "<Đưa ra 2-3 lời khuyên thiết thực>"\n' +
+      '  }\n' +
+      '}' 
+      : 
+      '{\n' +
+      '  "isFood": <true nếu là thực phẩm/đồ uống/bao bì, false nếu là đồ vật lạ>,\n' +
+      '  "title": "<Điền tên cụ thể của sản phẩm/thực phẩm. KHÔNG ghi chung chung>",\n' +
+      '  "category": "<Gia vị / Sữa / Thực phẩm chức năng / Đồ ăn tươi sống / Đồ uống / Bánh kẹo / Khác>",\n' +
+      '  "rating": "<Điểm số an toàn từ 1.0 đến 10.0>",\n' +
+      '  "scoreText": "<Tuyệt đối an toàn / An toàn sử dụng / Chứa phụ gia nguy cơ / Không an toàn>",\n' +
+      '  "safeLevel": "<Tóm tắt 1 dòng các nguy cơ lớn nhất>",\n' +
+      '  "details": {\n' +
+      '    "additives": [\n' +
+      '      { "code": "<E-Code>", "name": "<Tên Hóa Học>", "function": "<Chức Năng>", "risk": "<Thấp/TB/Cao>", "regulation": "<Quy Định EU/FDA>" }\n' +
+      '    ],\n' +
+      '    "nutritionWarnings": "<Phân tích mức Đường, Sodium, Trans fat, Chất béo bão hòa>",\n' +
+      '    "longTermRisks": "<Tác hại lâu dài (Mãn tính)>",\n' +
+      '    "legalDeviations": "<Vênh tiêu chuẩn pháp lý (nếu có)>",\n' +
+      '    "sensitiveGroups": {\n' +
+      '      "children": "<Rủi ro cho trẻ em>",\n' +
+      '      "pregnant": "<Rủi ro cho mẹ bầu & cho con bú>",\n' +
+      '      "patients": "<Cảnh báo cho người bệnh nền>"\n' +
+      '    }\n' +
+      '  }\n' +
+      '}');
 
     try {
       let responseText = '';
@@ -96,6 +91,7 @@ class AIService {
               ]
             }
           ],
+          response_format: { type: "json_object" },
           temperature: 0.2,
           max_tokens: 1024,
         });
@@ -113,6 +109,7 @@ class AIService {
               ]
             }
           ],
+          response_format: { type: "json_object" },
           temperature: 0.2,
           max_tokens: 1024,
         });
