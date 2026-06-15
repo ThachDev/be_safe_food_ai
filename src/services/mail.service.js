@@ -1,21 +1,47 @@
-const nodemailer = require('nodemailer');
+const axios = require('axios');
 require('dotenv').config();
 
 class MailService {
   constructor() {
-    this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_PORT === '465', // true for 465, false for other ports
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD,
-      },
-    });
+    this.apiKey = process.env.BREVO_API_KEY;
+    // Default sender info if not provided in env
+    this.senderEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || 'noreply@safefood.ai';
+    this.senderName = process.env.SMTP_FROM_NAME || 'Safe Food AI';
   }
 
   async sendMailInternal(mailOptions) {
-    await this.transporter.sendMail(mailOptions);
+    if (!this.apiKey) {
+      console.warn('[MailService] Lỗi: Chưa cấu hình BREVO_API_KEY trong file .env');
+      throw new Error('BREVO_API_KEY is missing');
+    }
+
+    const payload = {
+      sender: {
+        name: this.senderName,
+        email: this.senderEmail
+      },
+      to: [
+        {
+          email: mailOptions.to,
+        }
+      ],
+      subject: mailOptions.subject,
+      htmlContent: mailOptions.html
+    };
+
+    try {
+      const response = await axios.post('https://api.brevo.com/v3/smtp/email', payload, {
+        headers: {
+          'api-key': this.apiKey,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('[MailService Error] Brevo API Error:', error.response?.data || error.message);
+      throw error;
+    }
   }
 
   /**
@@ -25,8 +51,6 @@ class MailService {
    * @param {string} name Recipient display name
    */
   async sendOtpEmail(toEmail, otp, name = '') {
-    const fromAddress = process.env.SMTP_FROM || `"Safe Food AI" <${process.env.SMTP_USER}>`;
-
     const htmlContent = `
       <!DOCTYPE html>
       <html>
@@ -151,7 +175,6 @@ class MailService {
     `;
 
     const mailOptions = {
-      from: fromAddress,
       to: toEmail,
       subject: `[Safe Food AI] Mã xác thực đăng ký tài khoản - ${otp}`,
       html: htmlContent,
@@ -168,8 +191,6 @@ class MailService {
   }
 
   async sendForgotPasswordOtpEmail(toEmail, otp, name = '') {
-    const fromAddress = process.env.SMTP_FROM || `"Safe Food AI" <${process.env.SMTP_USER}>`;
-
     const htmlContent = `
       <!DOCTYPE html>
       <html>
@@ -294,7 +315,6 @@ class MailService {
     `;
 
     const mailOptions = {
-      from: fromAddress,
       to: toEmail,
       subject: `[Safe Food AI] Yêu cầu khôi phục mật khẩu - ${otp}`,
       html: htmlContent,
