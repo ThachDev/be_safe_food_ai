@@ -83,6 +83,15 @@ app.get('/', (req, res) => {
   });
 });
 
+// Health check endpoint for cron-job to keep server awake
+app.get('/health', (req, res) => {
+  res.status(HttpStatus.OK).json({
+    success: true,
+    message: 'Server is awake',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Fallback 404 Route handler
 app.use((req, res, next) => {
   res.status(HttpStatus.NOT_FOUND).json({
