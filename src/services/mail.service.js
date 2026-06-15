@@ -1,17 +1,48 @@
 const nodemailer = require('nodemailer');
+const axios = require('axios');
 require('dotenv').config();
 
 class MailService {
   constructor() {
-    this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_PORT === '465', // true for 465, false for other ports
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD,
-      },
-    });
+    this.useResendApi = !!process.env.RESEND_API_KEY;
+    if (!this.useResendApi) {
+      this.transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || 'smtp.gmail.com',
+        port: parseInt(process.env.SMTP_PORT || '587'),
+        secure: process.env.SMTP_PORT === '465', // true for 465, false for other ports
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASSWORD,
+        },
+      });
+    }
+  }
+
+  async sendMailInternal(mailOptions) {
+    if (this.useResendApi) {
+      // Send using Resend HTTP API (Port 443 - Không bao giờ bị chặn)
+      const payload = {
+        from: mailOptions.from,
+        to: [mailOptions.to],
+        subject: mailOptions.subject,
+        html: mailOptions.html,
+      };
+
+      try {
+        await axios.post('https://api.resend.com/emails', payload, {
+          headers: {
+            'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+            'Content-Type': 'application/json'
+          }
+        });
+      } catch (err) {
+        console.error('[Resend API Error]', err.response?.data || err.message);
+        throw new Error(err.response?.data?.message || err.message);
+      }
+    } else {
+      // Send using SMTP (Sẽ bị Render chặn nếu dùng port 587/465)
+      await this.transporter.sendMail(mailOptions);
+    }
   }
 
   /**
@@ -154,7 +185,7 @@ class MailService {
     };
 
     try {
-      await this.transporter.sendMail(mailOptions);
+      await this.sendMailInternal(mailOptions);
       console.log(`[MailService] OTP email sent successfully to ${toEmail}`);
       return true;
     } catch (error) {
@@ -297,7 +328,7 @@ class MailService {
     };
 
     try {
-      await this.transporter.sendMail(mailOptions);
+      await this.sendMailInternal(mailOptions);
       console.log(`[MailService] Forgot Password OTP email sent successfully to ${toEmail}`);
       return true;
     } catch (error) {
