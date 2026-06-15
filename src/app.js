@@ -1,9 +1,25 @@
 const express = require('express');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
 const apiRoutes = require('./routes');
 const { HttpStatus } = require('./constants');
 
 const app = express();
+
+// Trust proxy is required if running behind a reverse proxy like Render
+app.set('trust proxy', 1);
+
+// Global Rate Limiting: max 100 requests per minute per IP
+const globalLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 100, 
+  message: {
+    success: false,
+    code: 'TOO_MANY_REQUESTS',
+    message: 'Too many requests from this IP, please try again after a minute.'
+  }
+});
+app.use(globalLimiter);
 
 // Standard middlewares
 app.use(cors({
@@ -12,8 +28,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Custom Rich JSON Logger Middleware (Postman-style)
 app.use((req, res, next) => {
