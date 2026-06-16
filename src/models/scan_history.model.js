@@ -48,6 +48,30 @@ const ScanHistory = sequelize.define('ScanHistory', {
     type: DataTypes.TEXT('long'),
     allowNull: false,
     field: 'ai_result'
+  },
+  personalWarnings: {
+    type: DataTypes.TEXT('long'),
+    allowNull: true,
+    field: 'personal_warnings',
+    get() {
+      const rawValue = this.getDataValue('personalWarnings');
+      return rawValue ? JSON.parse(rawValue) : [];
+    },
+    set(value) {
+      this.setDataValue('personalWarnings', typeof value === 'string' ? value : JSON.stringify(value || []));
+    }
+  },
+  healthyAlternatives: {
+    type: DataTypes.TEXT('long'),
+    allowNull: true,
+    field: 'healthy_alternatives',
+    get() {
+      const rawValue = this.getDataValue('healthyAlternatives');
+      return rawValue ? JSON.parse(rawValue) : [];
+    },
+    set(value) {
+      this.setDataValue('healthyAlternatives', typeof value === 'string' ? value : JSON.stringify(value || []));
+    }
   }
 }, {
   tableName: 'scan_histories',

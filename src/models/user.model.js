@@ -30,6 +30,57 @@ const User = sequelize.define('User', {
     type: DataTypes.TEXT('medium'),
     allowNull: true,
     field: 'photo_url'
+  },
+  isOnboarded: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+    field: 'is_onboarded'
+  },
+  dietType: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    defaultValue: 'Bình thường',
+    field: 'diet_type'
+  },
+  allergies: {
+    type: DataTypes.TEXT('long'),
+    allowNull: true,
+    defaultValue: '[]',
+    field: 'allergies',
+    get() {
+      const rawValue = this.getDataValue('allergies');
+      return rawValue ? JSON.parse(rawValue) : [];
+    },
+    set(value) {
+      this.setDataValue('allergies', typeof value === 'string' ? value : JSON.stringify(value || []));
+    }
+  },
+  diseases: {
+    type: DataTypes.TEXT('long'),
+    allowNull: true,
+    defaultValue: '[]',
+    field: 'diseases',
+    get() {
+      const rawValue = this.getDataValue('diseases');
+      return rawValue ? JSON.parse(rawValue) : [];
+    },
+    set(value) {
+      this.setDataValue('diseases', typeof value === 'string' ? value : JSON.stringify(value || []));
+    }
+  },
+  healthGoals: {
+    type: DataTypes.TEXT('long'),
+    allowNull: true,
+    defaultValue: '[]',
+    field: 'health_goals',
+    get() {
+      const rawValue = this.getDataValue('health_goals');
+      return rawValue ? JSON.parse(rawValue) : [];
+    },
+    set(value) {
+      this.setDataValue('health_goals', typeof value === 'string' ? value : JSON.stringify(value || []));
+    }
   }
 }, {
   tableName: 'users',

@@ -34,6 +34,11 @@ class AuthController {
           email: user.email,
           displayName: user.displayName,
           photoUrl: user.photoUrl,
+          isOnboarded: user.isOnboarded,
+          dietType: user.dietType,
+          allergies: user.allergies || [],
+          diseases: user.diseases || [],
+          healthGoals: user.healthGoals || [],
           createdAt: user.createdAt,
           updatedAt: user.updatedAt
         }
@@ -109,6 +114,11 @@ class AuthController {
             firebaseUid: user.firebaseUid,
             email: user.email,
             displayName: user.displayName,
+            isOnboarded: user.isOnboarded,
+            dietType: user.dietType,
+            allergies: user.allergies || [],
+            diseases: user.diseases || [],
+            healthGoals: user.healthGoals || [],
             createdAt: user.createdAt,
             updatedAt: user.updatedAt
           }

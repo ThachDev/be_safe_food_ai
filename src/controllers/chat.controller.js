@@ -6,14 +6,14 @@ class ChatController {
    */
   static async analyze(req, res) {
     try {
-      const { prompt, sessionId, base64Image } = req.body;
       const firebaseUid = req.user.uid;
+      const { sessionId, prompt, base64Image, scanHistoryId } = req.body;
 
-      if (!prompt || !sessionId) {
+      if (!sessionId || !prompt) {
         return res.status(400).json({ status: 'error', message: 'Prompt and sessionId are required' });
       }
 
-      const result = await ChatService.analyzeFood(firebaseUid, sessionId, prompt, base64Image);
+      const result = await ChatService.analyzeFood(firebaseUid, sessionId, prompt, base64Image || null, scanHistoryId || null);
       return res.status(200).json({ status: 'success', data: result });
     } catch (error) {
       console.error('ChatController error:', error);

@@ -16,7 +16,7 @@ class ScanController {
    */
   static async analyzeScan(req, res, next) {
     try {
-      const { scanType, base64Image } = req.body;
+      const { scanType, base64Image, additionalContext } = req.body;
 
       if (!scanType || !base64Image) {
         return res.status(HttpStatus.BAD_REQUEST).json({
@@ -26,9 +26,19 @@ class ScanController {
         });
       }
 
+      const firebaseUid = req.user.uid;
+      const user = await ScanController._findUser(firebaseUid);
+      if (!user) {
+        return res.status(HttpStatus.NOT_FOUND).json({
+          success: false,
+          code: 'USER_NOT_FOUND',
+          message: 'User not found'
+        });
+      }
+
       console.log(`[ScanController.analyzeScan] Running AI Vision check for mode: ${scanType}`);
       const [aiResult, uploadedImageUrl] = await Promise.all([
-        AIService.analyzeImage(scanType, base64Image),
+        AIService.analyzeImage(scanType, base64Image, user, additionalContext || null),
         CloudinaryService.uploadImage(base64Image)
       ]);
 
@@ -37,6 +47,8 @@ class ScanController {
       let rating = '7.5';
       let scoreText = 'Cần lưu ý';
       let safeLevel = 'Chưa xác định';
+      let personalWarnings = [];
+      let healthyAlternatives = [];
       let cleanedResult = aiResult;
 
       try {
@@ -55,6 +67,8 @@ class ScanController {
         rating = parsed.rating || rating;
         scoreText = parsed.scoreText || scoreText;
         safeLevel = parsed.safeLevel || safeLevel;
+        personalWarnings = parsed.personalWarnings || [];
+        healthyAlternatives = parsed.healthyAlternatives || [];
         
         // Save the details object as a JSON string to be sent to frontend
         if (parsed.details) {
@@ -74,6 +88,8 @@ class ScanController {
           rating,
           scoreText,
           safeLevel,
+          personalWarnings,
+          healthyAlternatives,
           aiResult: cleanedResult || aiResult,
           imageUrl: uploadedImageUrl
         }
@@ -99,7 +115,7 @@ class ScanController {
         });
       }
 
-      const { scanType, title, category, imageUrl, rating, scoreText, safeLevel, aiResult } = req.body;
+      const { scanType, title, category, imageUrl, rating, scoreText, safeLevel, aiResult, personalWarnings, healthyAlternatives } = req.body;
 
       if (!scanType || !title || !category || !rating || !scoreText || !safeLevel || !aiResult) {
         return res.status(HttpStatus.BAD_REQUEST).json({
@@ -118,7 +134,9 @@ class ScanController {
         rating,
         scoreText,
         safeLevel,
-        aiResult
+        aiResult,
+        personalWarnings: personalWarnings || [],
+        healthyAlternatives: healthyAlternatives || []
       });
 
       return res.status(HttpStatus.CREATED).json({

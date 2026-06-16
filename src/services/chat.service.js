@@ -41,7 +41,7 @@ class ChatService {
   /**
    * Send message to Groq AI and save conversation to DB
    */
-  static async analyzeFood(firebaseUid, sessionId, prompt, base64Image = null) {
+  static async analyzeFood(firebaseUid, sessionId, prompt, base64Image = null, scanHistoryId = null) {
     try {
       // 1. Look up the MySQL user
       const user = await findUser(firebaseUid);
@@ -49,6 +49,30 @@ class ChatService {
 
       if (!sessionId) {
         throw new Error('sessionId is required');
+      }
+
+      // Query scan context if scanHistoryId is provided
+      let scanContextStr = '';
+      if (scanHistoryId) {
+        const scan = await db.ScanHistory.findOne({ where: { id: scanHistoryId, userId: user.id } });
+        if (scan) {
+          const warnings = scan.personalWarnings && scan.personalWarnings.length > 0 
+            ? scan.personalWarnings.join(', ') 
+            : 'Không có';
+          const alternatives = scan.healthyAlternatives && scan.healthyAlternatives.length > 0 
+            ? scan.healthyAlternatives.join(', ') 
+            : 'Không có';
+          
+          scanContextStr = `\n[BỐI CẢNH QUÉT THỰC PHẨM ĐƯỢC CHỌN]:
+- Tên thực phẩm: ${scan.title}
+- Phân loại: ${scan.category}
+- Điểm an toàn cá nhân hóa: ${scan.rating}/10 (${scan.scoreText})
+- Tóm tắt rủi ro lớn nhất: ${scan.safeLevel}
+- Cảnh báo sức khỏe cá nhân: ${warnings}
+- Gợi ý sản phẩm thay thế: ${alternatives}
+- Kết quả AI chi tiết trước đó: ${scan.aiResult}
+Người dùng muốn trò chuyện và hỏi bạn thêm chi tiết hoặc lời khuyên chuyên sâu về thực phẩm vừa được quét ở trên.`;
+        }
       }
 
       // 2. Save user's message to DB (Only save text)
@@ -62,6 +86,7 @@ class ChatService {
       // 3. Prepare call Groq AI
       const groq = getGroq();
       let responseText = '';
+      const finalSystemPrompt = SYSTEM_PROMPT + (scanContextStr ? '\n' + scanContextStr : '');
       
       try {
         if (base64Image) {
@@ -69,7 +94,7 @@ class ChatService {
           const completion = await groq.chat.completions.create({
             model: GROQ_MODEL_VISION,
             messages: [
-              { role: 'system', content: SYSTEM_PROMPT },
+              { role: 'system', content: finalSystemPrompt },
               { 
                 role: 'user', 
                 content: [
@@ -87,7 +112,7 @@ class ChatService {
           const completion = await groq.chat.completions.create({
             model: GROQ_MODEL_TEXT,
             messages: [
-              { role: 'system', content: SYSTEM_PROMPT },
+              { role: 'system', content: finalSystemPrompt },
               { role: 'user', content: prompt }
             ],
             temperature: 0.7,
