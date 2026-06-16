@@ -10,7 +10,7 @@ const { Readability } = require('@mozilla/readability');
 // Fetch news from Google News RSS
 exports.getNewsWarnings = async (req, res, next) => {
   try {
-    const rssUrl = encodeURI('https://news.google.com/rss/search?q=thực+phẩm+giả+OR+hoá+chất+độc+hại+OR+ngộ+độc+thực+phẩm&hl=vi&gl=VN&ceid=VN:vi');
+    const rssUrl = encodeURI('https://news.google.com/rss/search?q=thực+phẩm+giả+OR+hoá+chất+độc+hại+OR+ngộ+độc+thực+phẩm+when:7d&hl=vi&gl=VN&ceid=VN:vi');
     const feed = await parser.parseURL(rssUrl);
 
     const sortedItems = feed.items.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
