@@ -5,6 +5,7 @@ const userRoutes = require('./user.route');
 const chatRoutes = require('./chat.route');
 const newsRoutes = require('./news.route');
 const scanRoutes = require('./scan.route');
+const profileRoutes = require('./profile.route');
 
 // Mount routes
 router.use('/auth', authRoutes);
@@ -12,6 +13,7 @@ router.use('/users', userRoutes);
 router.use('/chat', chatRoutes);
 router.use('/news', newsRoutes);
 router.use('/scans', scanRoutes);
+router.use('/profile', profileRoutes);
 // Health check endpoint
 router.get('/health', (req, res) => {
   res.status(200).json({

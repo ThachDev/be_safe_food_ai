@@ -75,11 +75,11 @@ const User = sequelize.define('User', {
     defaultValue: '[]',
     field: 'health_goals',
     get() {
-      const rawValue = this.getDataValue('health_goals');
+      const rawValue = this.getDataValue('healthGoals');
       return rawValue ? JSON.parse(rawValue) : [];
     },
     set(value) {
-      this.setDataValue('health_goals', typeof value === 'string' ? value : JSON.stringify(value || []));
+      this.setDataValue('healthGoals', typeof value === 'string' ? value : JSON.stringify(value || []));
     }
   }
 }, {
