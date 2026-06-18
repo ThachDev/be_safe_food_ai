@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const authRoutes = require('./auth.route');
+const { authRoutes } = require('../interfaces/web/routes/auth.routes');
 const userRoutes = require('./user.route');
 const chatRoutes = require('./chat.route');
 const newsRoutes = require('./news.route');
@@ -8,7 +8,7 @@ const scanRoutes = require('./scan.route');
 const profileRoutes = require('./profile.route');
 
 // Mount routes
-router.use('/auth', authRoutes);
+router.use('/auth', authRoutes());
 router.use('/users', userRoutes);
 router.use('/chat', chatRoutes);
 router.use('/news', newsRoutes);

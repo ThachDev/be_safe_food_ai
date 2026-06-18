@@ -1,3 +1,5 @@
+require('reflect-metadata');
+require('./di/container');
 require('dotenv').config();
 const app = require('./app');
 const { sequelize } = require('./models');
