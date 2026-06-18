@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { container } from 'tsyringe';
 import { ChatController } from '../controllers/chat.controller';
 
-const verifyToken = require('../../../middlewares/auth.middleware');
+import { authMiddleware as verifyToken } from '../middlewares/auth.middleware';
 
 export function chatRoutes(): Router {
   const router = Router();

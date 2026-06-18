@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { container } from 'tsyringe';
 import { AuthController } from '../controllers/auth.controller';
 
-const authMiddleware = require('../../../middlewares/auth.middleware');
+import { authMiddleware } from '../middlewares/auth.middleware';
 
 export function authRoutes(): Router {
   const router = Router();

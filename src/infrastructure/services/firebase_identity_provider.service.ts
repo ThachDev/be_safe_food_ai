@@ -1,7 +1,7 @@
 import { injectable } from 'tsyringe';
 import { IIdentityProviderService } from '../../application/interfaces/i_identity_provider.service';
 
-const admin = require('../../config/firebase');
+import admin from '../external/firebase';
 
 @injectable()
 export class FirebaseIdentityProviderService implements IIdentityProviderService {
@@ -14,8 +14,8 @@ export class FirebaseIdentityProviderService implements IIdentityProviderService
     });
     return {
       uid: firebaseUser.uid,
-      email: firebaseUser.email,
-      displayName: firebaseUser.displayName
+      email: firebaseUser.email || '',
+      displayName: firebaseUser.displayName || null
     };
   }
 
@@ -33,7 +33,7 @@ export class FirebaseIdentityProviderService implements IIdentityProviderService
     const firebaseUser = await admin.auth().getUserByEmail(email);
     return {
       uid: firebaseUser.uid,
-      email: firebaseUser.email
+      email: firebaseUser.email || ''
     };
   }
 }

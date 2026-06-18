@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 
-const admin = require('../../../../config/firebase');
+import admin from '../../../infrastructure/external/firebase';
 
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;

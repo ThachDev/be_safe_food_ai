@@ -7,7 +7,7 @@ import { ForgotPasswordPendingUseCase } from '../../../application/use_cases/aut
 import { VerifyOtpForgotUseCase } from '../../../application/use_cases/auth/verify_otp_forgot.use_case';
 import { ResetPasswordUseCase } from '../../../application/use_cases/auth/reset_password.use_case';
 
-const { HttpStatus, ErrorCodes } = require('../../../constants');
+import { HttpStatus, ErrorCodes } from '../../../shared/constants';
 
 @injectable()
 export class AuthController {

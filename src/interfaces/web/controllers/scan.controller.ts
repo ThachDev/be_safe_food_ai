@@ -7,7 +7,7 @@ import {
   DeleteScanUseCase 
 } from '../../../application/use_cases/scan/scan_management.use_cases';
 
-const { HttpStatus } = require('../../../constants');
+import { HttpStatus } from '../../../shared/constants';
 
 @injectable()
 export class ScanController {
