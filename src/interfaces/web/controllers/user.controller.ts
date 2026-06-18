@@ -1,15 +1,30 @@
-const userService = require('../services/user.service');
-const { HttpStatus, ErrorCodes } = require('../constants');
+import { Request, Response } from 'express';
+import { injectable, inject } from 'tsyringe';
+import { 
+  GetUsersUseCase, 
+  GetUserByIdUseCase, 
+  CreateUserUseCase, 
+  UpdateUserUseCase 
+} from '../../../application/use_cases/user/user_management.use_cases';
+import { HttpStatus, ErrorCodes } from '../../../shared/constants';
 
-class UserController {
-  async getUsers(req, res) {
+@injectable()
+export class UserController {
+  constructor(
+    @inject(GetUsersUseCase) private getUsersUseCase: GetUsersUseCase,
+    @inject(GetUserByIdUseCase) private getUserByIdUseCase: GetUserByIdUseCase,
+    @inject(CreateUserUseCase) private createUserUseCase: CreateUserUseCase,
+    @inject(UpdateUserUseCase) private updateUserUseCase: UpdateUserUseCase
+  ) {}
+
+  getUsers = async (req: Request, res: Response) => {
     try {
-      const users = await userService.getAllUsers();
+      const users = await this.getUsersUseCase.execute();
       return res.status(HttpStatus.OK).json({
         success: true,
         data: users
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('[UserController getUsers Error]:', error);
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
@@ -18,11 +33,12 @@ class UserController {
         error: error.message
       });
     }
-  }
+  };
 
-  async getUserById(req, res) {
+  getUserById = async (req: Request, res: Response) => {
     try {
-      const user = await userService.getUserById(req.params.id);
+      const id = parseInt(req.params.id as string, 10);
+      const user = await this.getUserByIdUseCase.execute(id);
       if (!user) {
         return res.status(HttpStatus.NOT_FOUND).json({
           success: false,
@@ -33,7 +49,7 @@ class UserController {
         success: true,
         data: user
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('[UserController getUserById Error]:', error);
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
@@ -42,16 +58,16 @@ class UserController {
         error: error.message
       });
     }
-  }
+  };
 
-  async createUser(req, res) {
+  createUser = async (req: Request, res: Response) => {
     try {
-      const user = await userService.createUser(req.body);
+      const user = await this.createUserUseCase.execute(req.body);
       return res.status(HttpStatus.CREATED).json({
         success: true,
         data: user
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('[UserController createUser Error]:', error);
       return res.status(HttpStatus.BAD_REQUEST).json({
         success: false,
@@ -60,16 +76,17 @@ class UserController {
         error: error.message
       });
     }
-  }
+  };
 
-  async updateUser(req, res) {
+  updateUser = async (req: Request, res: Response) => {
     try {
-      const user = await userService.updateUser(req.params.id, req.body);
+      const id = parseInt(req.params.id as string, 10);
+      const user = await this.updateUserUseCase.execute(id, req.body);
       return res.status(HttpStatus.OK).json({
         success: true,
         data: user
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('[UserController updateUser Error]:', error);
       if (error.message === 'User not found') {
         return res.status(HttpStatus.NOT_FOUND).json({
@@ -84,7 +101,5 @@ class UserController {
         error: error.message
       });
     }
-  }
+  };
 }
-
-module.exports = new UserController();

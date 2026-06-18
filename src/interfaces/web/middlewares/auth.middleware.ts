@@ -1,6 +1,8 @@
-const admin = require('../config/firebase');
+import { Request, Response, NextFunction } from 'express';
 
-const authMiddleware = async (req, res, next) => {
+const admin = require('../../../../config/firebase');
+
+export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -14,7 +16,6 @@ const authMiddleware = async (req, res, next) => {
   const token = authHeader.split(' ')[1];
 
   try {
-    // If Firebase was not initialized, fail gracefully
     if (!admin || !admin.apps.length) {
       return res.status(503).json({
         success: false,
@@ -25,8 +26,7 @@ const authMiddleware = async (req, res, next) => {
 
     const decodedToken = await admin.auth().verifyIdToken(token);
     
-    // Bind token payload information to request context
-    req.user = {
+    (req as any).user = {
       uid: decodedToken.uid,
       email: decodedToken.email,
       name: decodedToken.name || decodedToken.display_name || '',
@@ -34,7 +34,7 @@ const authMiddleware = async (req, res, next) => {
     };
 
     next();
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Auth Middleware Error] Failed to verify ID Token:', error.message);
     return res.status(401).json({
       success: false,
@@ -44,5 +44,3 @@ const authMiddleware = async (req, res, next) => {
     });
   }
 };
-
-module.exports = authMiddleware;

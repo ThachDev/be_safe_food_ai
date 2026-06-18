@@ -45,7 +45,7 @@ export class VerifyOtpAndRegisterUseCase {
     if (user) {
       user.firebaseUid = firebaseUser.uid;
       user.displayName = firebaseUser.displayName;
-      await this.userRepository.update(user);
+      await this.userRepository.update(user.id, user);
     } else {
       user = await this.userRepository.create({
         firebaseUid: firebaseUser.uid,

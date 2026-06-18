@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/db');
+import { DataTypes } from 'sequelize';
+import sequelize from '../connection';
 
 const ChatMessage = sequelize.define('ChatMessage', {
   id: {
@@ -32,4 +32,4 @@ const ChatMessage = sequelize.define('ChatMessage', {
   timestamps: true, // Thêm createdAt và updatedAt
 });
 
-module.exports = ChatMessage;
+export default ChatMessage;

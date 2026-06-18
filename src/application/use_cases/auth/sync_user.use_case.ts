@@ -32,7 +32,7 @@ export class SyncUserUseCase {
       }
 
       if (hasChanges) {
-        await this.userRepository.update(user);
+        await this.userRepository.update(user.id, user);
       }
     } else {
       let userByEmail = await this.userRepository.findByEmail(email);
@@ -41,7 +41,7 @@ export class SyncUserUseCase {
         if (name) userByEmail.displayName = name;
         if (picture) userByEmail.photoUrl = picture;
         
-        await this.userRepository.update(userByEmail);
+        await this.userRepository.update(userByEmail.id, userByEmail);
         user = userByEmail;
       } else {
         user = await this.userRepository.create({

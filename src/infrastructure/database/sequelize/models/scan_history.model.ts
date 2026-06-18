@@ -1,5 +1,5 @@
- const { DataTypes } = require('sequelize');
-const sequelize = require('../config/db');
+ import { DataTypes } from 'sequelize';
+import sequelize from '../connection';
 
 const ScanHistory = sequelize.define('ScanHistory', {
   id: {
@@ -78,4 +78,4 @@ const ScanHistory = sequelize.define('ScanHistory', {
   timestamps: true
 });
 
-module.exports = ScanHistory;
+export default ScanHistory;

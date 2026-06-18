@@ -1,7 +1,7 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/db');
+import { DataTypes } from 'sequelize';
+import sequelize from '../connection';
 
-const PasswordReset = sequelize.define('PasswordReset', {
+const PendingUser = sequelize.define('PendingUser', {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
@@ -15,6 +15,15 @@ const PasswordReset = sequelize.define('PasswordReset', {
       isEmail: true
     }
   },
+  displayName: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'display_name'
+  },
+  password: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
   otp: {
     type: DataTypes.STRING(6),
     allowNull: false
@@ -25,7 +34,7 @@ const PasswordReset = sequelize.define('PasswordReset', {
     field: 'expires_at'
   }
 }, {
-  tableName: 'password_resets',
+  tableName: 'pending_users',
   indexes: [
     {
       unique: true,
@@ -34,4 +43,4 @@ const PasswordReset = sequelize.define('PasswordReset', {
   ]
 });
 
-module.exports = PasswordReset;
+export default PendingUser;

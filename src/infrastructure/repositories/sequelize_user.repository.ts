@@ -5,9 +5,9 @@ import { PendingUser } from '../../domain/entities/pending_user.entity';
 import { PasswordReset } from '../../domain/entities/password_reset.entity';
 
 // Import existing sequelize models
-const SequelizeUser = require('../../models/user.model');
-const SequelizePendingUser = require('../../models/pending_user.model');
-const SequelizePasswordReset = require('../../models/password_reset.model');
+import SequelizeUser from '../database/sequelize/models/user.model';
+import SequelizePendingUser from '../database/sequelize/models/pending_user.model';
+import SequelizePasswordReset from '../database/sequelize/models/password_reset.model';
 
 @injectable()
 export class SequelizeUserRepository implements IUserRepository {
@@ -47,6 +47,12 @@ export class SequelizeUserRepository implements IUserRepository {
     );
   }
 
+  async findById(id: number): Promise<User | null> {
+    const userModel = await SequelizeUser.findByPk(id);
+    if (!userModel) return null;
+    return this.mapToUserEntity(userModel);
+  }
+
   async findByFirebaseUid(uid: string): Promise<User | null> {
     const record = await SequelizeUser.findOne({ where: { firebaseUid: uid } });
     if (!record) return null;
@@ -57,6 +63,11 @@ export class SequelizeUserRepository implements IUserRepository {
     const record = await SequelizeUser.findOne({ where: { email } });
     if (!record) return null;
     return this.mapToUserEntity(record);
+  }
+
+  async findAll(): Promise<User[]> {
+    const users = await SequelizeUser.findAll();
+    return users.map((u: any) => this.mapToUserEntity(u));
   }
 
   async create(user: Omit<User, 'id'>): Promise<User> {
@@ -74,18 +85,8 @@ export class SequelizeUserRepository implements IUserRepository {
     return this.mapToUserEntity(record);
   }
 
-  async update(user: User): Promise<void> {
-    await SequelizeUser.update({
-      firebaseUid: user.firebaseUid,
-      email: user.email,
-      displayName: user.displayName,
-      photoUrl: user.photoUrl,
-      isOnboarded: user.isOnboarded,
-      dietType: user.dietType,
-      allergies: user.allergies,
-      diseases: user.diseases,
-      healthGoals: user.healthGoals
-    }, { where: { id: user.id } });
+  async update(id: number, data: Partial<User>): Promise<void> {
+    await SequelizeUser.update(data, { where: { id } });
   }
 
   async findPendingUserByEmail(email: string): Promise<PendingUser | null> {

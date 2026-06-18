@@ -59,7 +59,7 @@ export class ChatController {
         return res.status(400).json({ status: 'error', message: 'sessionId is required' });
       }
       
-      const history = await this.getChatHistoryUseCase.execute(firebaseUid, sessionId);
+      const history = await this.getChatHistoryUseCase.execute(firebaseUid, req.params.sessionId as string);
       return res.status(200).json({ status: 'success', data: history });
     } catch (error: any) {
       console.error('ChatController getHistory error:', error);
@@ -81,7 +81,7 @@ export class ChatController {
   deleteSession = async (req: Request, res: Response) => {
     try {
       const firebaseUid = (req as any).user.uid;
-      const sessionId = req.params.sessionId;
+      const sessionId = req.params.sessionId as string;
       if (!sessionId) {
         return res.status(400).json({ status: 'error', message: 'sessionId is required' });
       }

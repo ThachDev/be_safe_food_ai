@@ -1,17 +1,15 @@
-const express = require('express');
-const cors = require('cors');
-const rateLimit = require('express-rate-limit');
-const apiRoutes = require('./routes');
-const { HttpStatus } = require('./constants');
+import express, { Request, Response, NextFunction } from 'express';
+import cors from 'cors';
+import rateLimit from 'express-rate-limit';
+import apiRoutes from './routes';
+import { HttpStatus } from './shared/constants';
 
 const app = express();
 
-// Trust proxy is required if running behind a reverse proxy like Render
 app.set('trust proxy', 1);
 
-// Global Rate Limiting: max 100 requests per minute per IP
 const globalLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
+  windowMs: 1 * 60 * 1000,
   max: 100, 
   message: {
     success: false,
@@ -21,9 +19,8 @@ const globalLimiter = rateLimit({
 });
 app.use(globalLimiter);
 
-// Standard middlewares
 app.use(cors({
-  origin: '*', // Allows Flutter app connections; customize in production
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -31,28 +28,25 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// Custom Rich JSON Logger Middleware (Postman-style)
-app.use((req, res, next) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
   const start = Date.now();
   const originalJson = res.json;
-  let responseBody;
+  let responseBody: any;
 
-  // Capture response payload
-  res.json = function (body) {
+  res.json = function (body: any) {
     responseBody = body;
-    return originalJson.apply(res, arguments);
+    return originalJson.apply(res, arguments as any);
   };
 
   res.on('finish', () => {
     const duration = Date.now() - start;
     
-    // Safely truncate large payloads (like Base64 strings) to keep console readable
-    const sanitize = (body) => {
+    const sanitize = (body: any) => {
       if (!body || typeof body !== 'object') return body;
       
       const copy = JSON.parse(JSON.stringify(body));
       
-      const truncateLongStrings = (obj) => {
+      const truncateLongStrings = (obj: any) => {
         for (const key in obj) {
           if (typeof obj[key] === 'string' && obj[key].length > 150) {
             obj[key] = `${obj[key].substring(0, 100)}... [truncated, length: ${obj[key].length}]`;
@@ -87,11 +81,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// Register routes
 app.use('/api/v1', apiRoutes);
 
-// Base / Welcome endpoint
-app.get('/', (req, res) => {
+app.get('/', (req: Request, res: Response) => {
   res.status(HttpStatus.OK).json({
     success: true,
     message: 'Welcome to the Safe Food AI API Server!',
@@ -99,8 +91,7 @@ app.get('/', (req, res) => {
   });
 });
 
-// Health check endpoint for cron-job to keep server awake
-app.get('/health', (req, res) => {
+app.get('/health', (req: Request, res: Response) => {
   res.status(HttpStatus.OK).json({
     success: true,
     message: 'Server is awake',
@@ -108,8 +99,7 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Fallback 404 Route handler
-app.use((req, res, next) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
   res.status(HttpStatus.NOT_FOUND).json({
     success: false,
     code: 'NOT_FOUND',
@@ -117,8 +107,7 @@ app.use((req, res, next) => {
   });
 });
 
-// Global Centralized Error Handler
-app.use((err, req, res, next) => {
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error('[Global Error Handler]:', err);
   res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
     success: false,
@@ -128,4 +117,4 @@ app.use((err, req, res, next) => {
   });
 });
 
-module.exports = app;
+export default app;

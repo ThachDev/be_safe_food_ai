@@ -8,6 +8,7 @@ import { SequelizeChatRepository } from '../infrastructure/repositories/sequeliz
 import { SequelizeScanRepository } from '../infrastructure/repositories/sequelize_scan.repository';
 import { GroqGenerativeAiService } from '../infrastructure/services/groq_generative_ai.service';
 import { CloudinaryWrapperService } from '../infrastructure/services/cloudinary_wrapper.service';
+import { GoogleNewsProviderService } from '../infrastructure/services/google_news_provider.service';
 
 // Register implementations for interfaces
 container.register('IUserRepository', { useClass: SequelizeUserRepository });
@@ -18,5 +19,6 @@ container.register('IChatRepository', { useClass: SequelizeChatRepository });
 container.register('IScanRepository', { useClass: SequelizeScanRepository });
 container.register('IGenerativeAiService', { useClass: GroqGenerativeAiService });
 container.register('ICloudinaryService', { useClass: CloudinaryWrapperService });
+container.register('INewsProviderService', { useClass: GoogleNewsProviderService });
 
 export { container };

@@ -3,10 +3,12 @@ import { PendingUser } from '../entities/pending_user.entity';
 import { PasswordReset } from '../entities/password_reset.entity';
 
 export interface IUserRepository {
+  findById(id: number): Promise<User | null>;
   findByFirebaseUid(uid: string): Promise<User | null>;
   findByEmail(email: string): Promise<User | null>;
-  create(user: Omit<User, 'id'>): Promise<User>;
-  update(user: User): Promise<void>;
+  findAll(): Promise<User[]>;
+  create(user: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User>;
+  update(id: number, data: Partial<User>): Promise<void>;
 
   findPendingUserByEmail(email: string): Promise<PendingUser | null>;
   savePendingUser(pendingUser: Omit<PendingUser, 'id'> | PendingUser): Promise<PendingUser>;

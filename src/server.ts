@@ -1,19 +1,20 @@
-require('reflect-metadata');
-require('./di/container');
-require('dotenv').config();
-const app = require('./app');
-const { sequelize } = require('./models');
+import 'reflect-metadata';
+import './di/container';
+import dotenv from 'dotenv';
+dotenv.config();
 
+import app from './app';
+import db from './infrastructure/database/sequelize/models';
+
+const { sequelize } = db;
 const PORT = process.env.PORT || 5001;
 
 async function startServer() {
   try {
-    // 1. Authenticate connection with MySQL
     console.log('[Database] Connecting to MySQL...');
     await sequelize.authenticate();
     console.log('[Database] Connection established successfully.');
 
-    // 2. Synchronize schemas (safe sync - only creates tables if they don't exist)
     if (process.env.NODE_ENV === 'development') {
       console.log('[Database] Synchronizing schema (safe mode)...');
       await sequelize.sync();
@@ -22,7 +23,6 @@ async function startServer() {
       console.log('[Database] Production environment detected; skipping auto-sync. Please manage database changes via migrations.');
     }
 
-    // 3. Start Express server listener
     app.listen(PORT, () => {
       console.log(`\n======================================================`);
       console.log(`🚀 Server is running in ${process.env.NODE_ENV || 'development'} mode`);
@@ -30,7 +30,7 @@ async function startServer() {
       console.log(`🏥 Health check: http://localhost:${PORT}/api/v1/health`);
       console.log(`======================================================\n`);
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('\n🔴 Failed to start the server due to database connection issue:');
     if (error.original && error.original.code === 'ER_BAD_DB_ERROR') {
       console.error(`🚨 Error: Database "${process.env.DB_NAME || 'safefood_db'}" does not exist in MySQL.`);

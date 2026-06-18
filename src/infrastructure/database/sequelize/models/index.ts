@@ -1,9 +1,9 @@
-const sequelize = require('../config/db');
-const User = require('./user.model');
-const PendingUser = require('./pending_user.model');
-const PasswordReset = require('./password_reset.model');
-const ChatMessage = require('./chat_message.model');
-const ScanHistory = require('./scan_history.model');
+import sequelize from '../connection';
+import User from './user.model';
+import PendingUser from './pending_user.model';
+import PasswordReset from './password_reset.model';
+import ChatMessage from './chat_message.model';
+import ScanHistory from './scan_history.model';
 
 const db = {
   sequelize,
@@ -22,4 +22,5 @@ db.ChatMessage.belongsTo(db.User, { foreignKey: 'userId', as: 'user' });
 db.User.hasMany(db.ScanHistory, { foreignKey: 'userId', as: 'scanHistories' });
 db.ScanHistory.belongsTo(db.User, { foreignKey: 'userId', as: 'userScanHistories' });
 
-module.exports = db;
+export default db;
+export { User, PendingUser, PasswordReset, ChatMessage, ScanHistory };

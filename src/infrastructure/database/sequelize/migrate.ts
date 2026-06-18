@@ -1,4 +1,5 @@
-const sequelize = require('./config/db');
+import sequelize from './connection';
+import { DataTypes } from 'sequelize';
 
 async function migrate() {
   try {
@@ -15,7 +16,7 @@ async function migrate() {
     if (!userTableInfo.is_onboarded) {
       console.log('[Migration] Adding column "is_onboarded" to "users" table...');
       await queryInterface.addColumn('users', 'is_onboarded', {
-        type: sequelize.constructor.Sequelize.BOOLEAN,
+        type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: false
       });
@@ -24,7 +25,7 @@ async function migrate() {
     if (!userTableInfo.diet_type) {
       console.log('[Migration] Adding column "diet_type" to "users" table...');
       await queryInterface.addColumn('users', 'diet_type', {
-        type: sequelize.constructor.Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: false,
         defaultValue: 'Bình thường'
       });
@@ -33,7 +34,7 @@ async function migrate() {
     if (!userTableInfo.allergies) {
       console.log('[Migration] Adding column "allergies" to "users" table...');
       await queryInterface.addColumn('users', 'allergies', {
-        type: sequelize.constructor.Sequelize.TEXT('long'),
+        type: DataTypes.TEXT('long'),
         allowNull: true
       });
     }
@@ -41,7 +42,7 @@ async function migrate() {
     if (!userTableInfo.diseases) {
       console.log('[Migration] Adding column "diseases" to "users" table...');
       await queryInterface.addColumn('users', 'diseases', {
-        type: sequelize.constructor.Sequelize.TEXT('long'),
+        type: DataTypes.TEXT('long'),
         allowNull: true
       });
     }
@@ -49,7 +50,7 @@ async function migrate() {
     if (!userTableInfo.health_goals) {
       console.log('[Migration] Adding column "health_goals" to "users" table...');
       await queryInterface.addColumn('users', 'health_goals', {
-        type: sequelize.constructor.Sequelize.TEXT('long'),
+        type: DataTypes.TEXT('long'),
         allowNull: true
       });
     }
@@ -61,7 +62,7 @@ async function migrate() {
     if (!scanTableInfo.personal_warnings) {
       console.log('[Migration] Adding column "personal_warnings" to "scan_histories" table...');
       await queryInterface.addColumn('scan_histories', 'personal_warnings', {
-        type: sequelize.constructor.Sequelize.TEXT('long'),
+        type: DataTypes.TEXT('long'),
         allowNull: true
       });
     }
@@ -69,7 +70,7 @@ async function migrate() {
     if (!scanTableInfo.healthy_alternatives) {
       console.log('[Migration] Adding column "healthy_alternatives" to "scan_histories" table...');
       await queryInterface.addColumn('scan_histories', 'healthy_alternatives', {
-        type: sequelize.constructor.Sequelize.TEXT('long'),
+        type: DataTypes.TEXT('long'),
         allowNull: true
       });
     }
