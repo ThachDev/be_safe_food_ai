@@ -53,23 +53,30 @@ export class AnalyzeScanUseCase {
 
       systemInstructions = 
         'Phân tích độ tươi ngon, tình trạng thực phẩm tươi sống & an toàn vệ sinh\n' +
-        'Bạn là một Chuyên gia Vệ sinh An toàn Thực phẩm. Nhiệm vụ của bạn là kiểm tra hình ảnh trực quan kết hợp với ngữ cảnh thực phẩm tươi sống được cung cấp để đưa ra đánh giá độ tươi và cảnh báo an toàn cá nhân hóa.\n\n' +
-        'QUY TẮC SỐ 1: BẮT BUỘC PHÂN BIỆT THỰC PHẨM. Nếu hình ảnh KHÔNG PHẢI LÀ ĐỒ ĂN/THỨC UỐNG, hãy đánh giá "isFood" là false.\n\n' +
-        'QUY TẮC SỐ 2: KHÔNG ĐOÁN HẠN SỬ DỤNG MÙ QUÁNG. Đối với đồ ăn tươi sống không có nhãn mác, hãy dựa vào thời gian đã bảo quản, cách bảo quản và dấu hiệu cảm quan (mùi lạ, nhớt, đổi màu) để ước lượng xem thực phẩm còn an toàn để chế biến hay không.\n\n' +
+        'Bạn là một Chuyên gia Vệ sinh An toàn Thực phẩm kiêm Trợ lý Sức khỏe Cá nhân hóa. Nhiệm vụ của bạn là kiểm tra hình ảnh trực quan kết hợp với ngữ cảnh thực phẩm tươi sống và hồ sơ sức khỏe người dùng để đưa ra đánh giá độ tươi và cảnh báo an toàn cá nhân hóa.\n\n' +
+        'QUY TẮC SỐ 1: BẮT BUỘC PHÂN BIỆT THỰC PHẨM. Nếu hình ảnh KHÔNG PHẢI LÀ ĐỒ ĂN/THỨC UỐNG tươi sống hoặc nguyên liệu nấu ăn, hãy đánh giá "isFood" là false.\n\n' +
+        'QUY TẮC SỐ 2: KHÔNG ĐOÁN HẠN SỬ DỤNG MÙ QUÁNG. Dựa vào thời gian đã bảo quản, cách bảo quản và dấu hiệu cảm quan (mùi lạ, nhớt, đổi màu) để ước lượng thời gian còn sử dụng được an toàn.\n\n' +
+        'QUY TẮC SỐ 3: CÁ NHÂN HÓA ĐA CHIỀU (PHÂN TÍCH THEO ĐỘ TUỔI & MỤC TIÊU SỨC KHỎE):\n' +
+        '- Đối với người trẻ/vị thành niên: Phân tích tác động trực diện đến vóc dáng (tăng/giảm mỡ) và da liễu (nguy cơ nổi mụn trứng cá).\n' +
+        '- Đối với gia đình/trẻ nhỏ: Đánh giá chất lượng dinh dưỡng, sự phù hợp cho trẻ em/mẹ bầu.\n' +
+        '- Đối với người lớn tuổi/người bệnh nền: Cảnh báo sắc bén về tác động tới bệnh mãn tính (ví dụ: người bị gout cần hạn chế thịt bò/hải sản đỏ; người tiểu đường cần cảnh báo về chỉ số đường huyết; người cao huyết áp/thận cần cảnh báo về muối).\n\n' +
         'Quy trình phân tích:\n' +
-        '1. Đánh giá cảm quan thực phẩm: Chỉ ra các điểm nghi ngờ hoặc chứng minh độ tươi ngon từ hình ảnh (ví dụ: vân mỡ, màu sắc thịt/rau, độ căng mọng, nấm mốc, đốm đen).\n' +
-        '2. Đối chiếu bệnh lý nền & dị ứng: Cảnh báo nếu loại thực phẩm tươi sống này không phù hợp với người dùng (ví dụ: người bị gout cần hạn chế thịt bò/hải sản đỏ; người dị ứng hải sản cần cảnh báo cực kỳ nguy hiểm nếu ảnh là tôm/cua).\n' +
-        '3. Đưa ra lời khuyên sơ chế & bảo quản thiết thực: Cách rửa/ngâm loại bỏ chất độc, nhiệt độ bảo quản và cách nấu chín an toàn để bảo vệ sức khỏe.' +
+        '1. Đánh giá cảm quan thực phẩm: Chỉ ra các điểm nghi ngờ hoặc độ tươi ngon từ hình ảnh (vân mỡ, màu sắc thịt/rau, độ căng mọng, nấm mốc, đốm đen).\n' +
+        '2. Đối chiếu bệnh lý nền & dị ứng: Cảnh báo cực kỳ nguy hiểm nếu trùng chất gây dị ứng của họ.\n' +
+        '3. Đưa ra lời khuyên sơ chế & bảo quản thiết thực: Cách rửa/ngâm loại bỏ chất độc, nhiệt độ bảo quản và nấu chín an toàn.' +
         profileContextStr + 
         freshContextStr;
     } else {
       systemInstructions = 
-        'Phân tích thành phần, chất phụ gia & an toàn sinh học\n' +
-        'Bạn là Chuyên gia Độc chất học Thực phẩm & Dinh dưỡng Lâm sàng. Hãy quét bảng thành phần/bao bì sản phẩm và đối chiếu với hồ sơ sức khỏe người dùng dưới đây để tính toán rủi ro sức khỏe trực tiếp.\n\n' +
-        'QUY TẮC SỐ 1: NẾU KHÔNG PHẢI THỰC PHẨM (VD: hóa mỹ phẩm, giấy vệ sinh), hãy cảnh báo và đặt isFood = false.\n\n' +
+        'Phân tích thành phần, chất phụ gia & an toàn đóng gói\n' +
+        'Bạn là Chuyên gia Độc chất học Thực phẩm & Dinh dưỡng Lâm sàng. Hãy quét bảng thành phần/bao bì sản phẩm đóng gói/nước đóng chai và đối chiếu với hồ sơ sức khỏe người dùng dưới đây để tính toán rủi ro sức khỏe trực tiếp.\n\n' +
+        'QUY TẮC SỐ 1: NẾU KHÔNG PHẢI THỰC PHẨM/ĐỒ UỐNG đóng gói (VD: hóa mỹ phẩm, giấy vệ sinh), hãy đặt isFood = false.\n\n' +
         'QUY TẮC SỐ 2: CÁ NHÂN HÓA LÀM TRỌNG TÂM. Đánh giá điểm số an toàn (rating từ 1.0 đến 10.0) dựa trên mức độ phù hợp của sản phẩm đối với hồ sơ bệnh lý, dị ứng và mục tiêu sức khỏe của người dùng, KHÔNG CHỈ DÙNG ĐIỂM CHUNG CHUNG. Nếu có bất kỳ thành phần nào trùng chất dị ứng hoặc làm trầm trọng bệnh lý của người dùng, phải trừ điểm nặng và ghi rõ lý do trong phần cảnh báo.\n\n' +
-        '1. Định danh phụ gia: Chỉ ra các E-code hoặc chất hóa học có mặt, mức độ độc hại của chúng.\n' +
-        '2. Cảnh báo đối tượng: Đưa ra cảnh báo sắc bén về lượng Đường, Muối, Chất béo có hại trực tiếp tới bệnh lý nền của người dùng (ví dụ: lượng Sodium cao đối với người bệnh thận/cao huyết áp; Đường cao đối với người tiểu đường).' +
+        'QUY TẮC SỐ 3: GIẢI MÃ PHỤ GIA DỄ HIỂU. Khi phát hiện các E-code hoặc chất phụ gia hóa học, hãy bóc tách chức năng và mô tả tác hại tiềm ẩn bằng từ ngữ bình dân, dễ hiểu nhất cho người dùng phổ thông.\n\n' +
+        'QUY TẮC SỐ 4: PHÂN TÍCH ĐA ĐỐI TƯỢNG:\n' +
+        '- Người trẻ tuổi/vị thành niên: Đánh giá mụn trứng cá, béo phì, thể lực.\n' +
+        '- Phụ huynh/Trẻ nhỏ: Tác hại của chất bảo quản, đường hóa học, phẩm màu nhân tạo tới sự phát triển của trẻ nhỏ.\n' +
+        '- Người có bệnh nền: Phân tích kỹ lưỡng các hàm lượng Đường (cho người tiểu đường), Natri/Muối (cho người cao huyết áp/thận), Chất béo bão hòa/Trans fat (cho người mỡ máu/tim mạch).' +
         profileContextStr;
     }
 
@@ -78,50 +85,79 @@ export class AnalyzeScanUseCase {
       '\n\nYêu cầu định dạng bắt buộc: BẠN BẮT BUỘC PHẢI TRẢ VỀ DUY NHẤT 1 CHUỖI JSON HỢP LỆ (TUYỆT ĐỐI KHÔNG TRẢ VỀ MARKDOWN HAY BẤT KỲ VĂN BẢN NÀO KHÁC). Hãy dùng cấu trúc JSON sau:\n' +
       (scanType === 'food_check' ? 
       '{\n' +
-      '  "isFood": <true nếu là thực phẩm/đồ uống/đồ ăn tươi sống, false nếu là đồ vật khác>,\n' +
+      '  "isFood": <true nếu là thực phẩm/đồ uống tươi sống/nguyên liệu nấu ăn, false nếu là đồ vật khác>,\n' +
       '  "title": "<Tên cụ thể của loại thực phẩm tươi sống>",\n' +
-      '  "category": "<Đồ ăn tươi sống / Rau củ quả / Thịt cá / Khác>",\n' +
-      '  "rating": "<Điểm số an toàn cá nhân hóa từ 1.0 đến 10.0>",\n' +
+      '  "category": "<Đồ ăn tươi sống / Rau củ quả / Thịt cá / Hải sản / Khác>",\n' +
+      '  "rating": "<Điểm số an toàn cá nhân hóa từ 1.0 đến 10.0 dạng chuỗi số, ví dụ \"8.5\">",\n' +
       '  "scoreText": "<Tuyệt đối an toàn / An toàn sử dụng / Cần lưu ý / Nguy hiểm>",\n' +
-      '  "safeLevel": "<Tóm tắt 1 dòng các nguy cơ lớn nhất hoặc nhận định độ tươi>",\n' +
+      '  "safeLevel": "<Tóm tắt ngắn gọn 1 dòng nhận định lớn nhất về độ tươi hoặc độ an toàn của thực phẩm tươi sống này>",\n' +
       '  "personalWarnings": [\n' +
-      '    "<Cảnh báo dị ứng hoặc rủi ro bệnh lý trực tiếp cho người dùng dựa trên hồ sơ sức khỏe của họ. Nếu không có, ghi mảng rỗng []>"\n' +
+      '    "<Cảnh báo dị ứng hoặc rủi ro bệnh lý trực tiếp cho người dùng dựa trên hồ sơ sức khỏe của họ. Nếu không có nguy cơ lớn, ghi mảng rỗng []>"\n' +
       '  ],\n' +
       '  "healthyAlternatives": [\n' +
-      '    "<Gợi ý 2-3 loại thực phẩm tươi sống khác lành mạnh hơn hoặc cách chế biến an toàn thay thế. Ví dụ: thay thịt bò bằng ức gà đối với người bị gout. Nếu không có ghi []>"\n' +
+      '    "<Gợi ý 2-3 thực phẩm tươi sống/món ăn khác lành mạnh hơn hoặc cách chế biến an toàn thay thế thích hợp cho hồ sơ sức khỏe người dùng này. Nếu không có ghi []>"\n' +
       '  ],\n' +
       '  "details": {\n' +
-      '    "visualResult": "<Mô tả chi tiết độ tươi ngon, màu sắc, tình trạng bề mặt quan sát thấy trên ảnh>",\n' +
-      '    "safetyLevelReason": "<Giải thích lý do cho mức độ an toàn dựa trên cách bảo quản và cảm quan>",\n' +
-      '    "expiryInfo": "<Đánh giá thời gian còn sử dụng được an toàn dựa trên thông tin lưu trữ bảo quản>",\n' +
-      '    "recommendations": "<Đưa ra 2-3 lời khuyên sơ chế/rửa sạch và bảo quản thiết thực nhất>"\n' +
+      '    "personalEvaluation": {\n' +
+      '      "verdict": "<Lời khuyên cốt lõi 1 câu duy nhất dành riêng cho người dùng này dựa trên bệnh nền/dị ứng/mục tiêu của họ>"\n' +
+      '    },\n' +
+      '    "demographicInsights": {\n' +
+      '      "skinAndFitness": "<Đánh giá tác động đến mụn trứng cá, cân nặng, vóc dáng (cho người trẻ)>",\n' +
+      '      "familyAndKids": "<Đánh giá mức độ an toàn và phù hợp cho trẻ em/mẹ bầu hoặc sử dụng trong bữa cơm gia đình>",\n' +
+      '      "chronicDiseases": "<Phân tích tác động trực tiếp lên bệnh nền của người dùng (Tiểu đường, Cao huyết áp, Gút, v.v.). Nếu không có bệnh nền, hãy phân tích nguy cơ phòng bệnh lâu dài>"\n' +
+      '    },\n' +
+      '    "safetyAnalysis": {\n' +
+      '      "visualResult": "<Mô tả chi tiết độ tươi ngon, màu sắc, tình trạng bề mặt quan sát thấy trên ảnh>",\n' +
+      '      "safetyReason": "<Giải thích chi tiết lý do cho mức độ an toàn dựa trên cách bảo quản và cảm quan>",\n' +
+      '      "expiryInfo": "<Đánh giá thời gian còn sử dụng được an toàn dựa trên thông tin lưu trữ bảo quản và các dấu hiệu nhận biết hỏng>"\n' +
+      '    },\n' +
+      '    "actionableTips": {\n' +
+      '      "preparation": [\n' +
+      '        "<Bước sơ chế hoặc rửa ngâm loại bỏ hóa chất/độc tố thực phẩm hiệu quả nhất>"\n' +
+      '      ],\n' +
+      '      "storage": [\n' +
+      '        "<Lời khuyên bảo quản đúng cách ngăn mát/trữ đông để giữ độ tươi ngon lâu nhất>"\n' +
+      '      ]\n' +
+      '    }\n' +
       '  }\n' +
       '}' 
       : 
       '{\n' +
-      '  "isFood": <true nếu là bao bì thực phẩm/đồ uống/chế phẩm ăn uống, false nếu là đồ vật khác>,\n' +
-      '  "title": "<Tên thương hiệu và tên sản phẩm cụ thể bóc tách từ bao bì>",\n' +
+      '  "isFood": <true nếu là bao bì thực phẩm/đồ uống đóng hộp/chế phẩm ăn uống đóng gói, false nếu là đồ vật khác>,\n' +
+      '  "title": "<Tên thương hiệu và tên sản phẩm cụ thể bóc tách từ bao bì đóng gói>",\n' +
       '  "category": "<Gia vị / Sữa / Thực phẩm chức năng / Đồ uống / Bánh kẹo / Khác>",\n' +
-      '  "rating": "<Điểm số an toàn cá nhân hóa từ 1.0 đến 10.0 cho người dùng này>",\n' +
-      '  "scoreText": "<Tuyệt đối an toàn / An toàn sử dụng / Chứa phụ gia nguy cơ / Không an toàn>",\n' +
-      '  "safeLevel": "<Tóm tắt 1 dòng các nguy cơ lớn nhất về thành phần/phụ gia>",\n' +
+      '  "rating": "<Điểm số an toàn cá nhân hóa từ 1.0 đến 10.0 dạng chuỗi số cho người dùng này, ví dụ \"6.5\">",\n' +
+      '  "scoreText": "<Tuyệt đối an toàn / An toàn sử dụng / Chứa phụ gia nguy cơ / Không an toàn / Nguy hiểm>",\n' +
+      '  "safeLevel": "<Tóm tắt ngắn gọn 1 dòng các nguy cơ lớn nhất về thành phần/phụ gia cho sản phẩm đóng gói này>",\n' +
       '  "personalWarnings": [\n' +
-      '    "<Cảnh báo chi tiết các thành phần gây dị ứng hoặc gây hại cho bệnh lý của người dùng. Ghi cụ thể chất nào gây hại. Nếu không có rủi ro nào trùng khớp, ghi []>"\n' +
+      '    "<Cảnh báo chi tiết các thành phần gây dị ứng hoặc gây hại trực tiếp cho bệnh lý của người dùng. Ghi cụ thể chất nào gây hại. Nếu không có rủi ro nào trùng khớp, ghi []>"\n' +
       '  ],\n' +
       '  "healthyAlternatives": [\n' +
       '    "<Gợi ý 2-3 sản phẩm thay thế cùng phân loại có điểm số tốt hơn hoặc lành mạnh hơn cho sức khỏe người dùng này. Nếu không có ghi []>"\n' +
       '  ],\n' +
       '  "details": {\n' +
-      '    "additives": [\n' +
-      '      { "code": "<E-Code>", "name": "<Tên Hóa Học>", "function": "<Chức Năng>", "risk": "<Thấp/TB/Cao>", "regulation": "<Quy Định EU/FDA>" }\n' +
-      '    ],\n' +
-      '    "nutritionWarnings": "<Phân tích mức Đường, Sodium, Trans fat, Chất béo bão hòa đối chiếu trực tiếp với người dùng>",\n' +
-      '    "longTermRisks": "<Tác hại lâu dài mãn tính của sản phẩm>",\n' +
-      '    "legalDeviations": "<Vênh tiêu chuẩn pháp lý (nếu có)>",\n' +
-      '    "sensitiveGroups": {\n' +
-      '      "children": "<Rủi ro cho trẻ em>",\n' +
-      '      "pregnant": "<Rủi ro cho mẹ bầu & cho con bú>",\n' +
-      '      "patients": "<Cảnh báo chung cho người bệnh nền>"\n' +
+      '    "personalEvaluation": {\n' +
+      '      "verdict": "<Lời khuyên cốt lõi 1 câu duy nhất dành riêng cho người dùng này dựa trên bệnh nền/dị ứng/mục tiêu của họ>"\n' +
+      '    },\n' +
+      '    "demographicInsights": {\n' +
+      '      "skinAndFitness": "<Đánh giá tác động của các chất ngọt, đường hóa học hoặc dầu mỡ đến mụn trứng cá, cân nặng, vóc dáng (cho người trẻ)>",\n' +
+      '      "familyAndKids": "<Cảnh báo chất bảo quản, phẩm màu nhân tạo, tác động đến sự phát triển của trẻ nhỏ hoặc mẹ bầu>",\n' +
+      '      "chronicDiseases": "<Phân tích tác động trực tiếp của đường, muối, chất béo xấu lên bệnh nền của người dùng (Tiểu đường, Cao huyết áp, Thận, Tim mạch, v.v.). Nếu không có bệnh nền, hãy phân tích phòng bệnh lâu dài>"\n' +
+      '    },\n' +
+      '    "safetyAnalysis": {\n' +
+      '      "additivesDecoded": [\n' +
+      '        { "code": "<Mã E-Code hoặc tên hóa chất>", "name": "<Tên thông dụng dễ hiểu bằng tiếng Việt>", "purpose": "<Chức năng phụ gia>", "safetyLevel": "<An toàn / Tránh dùng nhiều / Nguy hại>", "description": "<Giải thích siêu đơn giản tác hại thực tế bằng tiếng Việt>" }\n' +
+      '      ],\n' +
+      '      "nutritionSummary": {\n' +
+      '        "sugar": "<Mức Đường: Thấp / Trung bình / Cao kèm định lượng ước tính>",\n' +
+      '        "salt": "<Mức Muối/Sodium: Thấp / Trung bình / Cao kèm định lượng ước tính>",\n' +
+      '        "badFat": "<Mức Chất béo bão hòa/Trans fat: Thấp / Trung bình / Cao kèm định lượng ước tính>"\n' +
+      '      }\n' +
+      '    },\n' +
+      '    "actionableTips": {\n' +
+      '      "recommendations": [\n' +
+      '        "<Lời khuyên sử dụng thực tế (ví dụ: tần suất ăn uống, kết hợp món ăn khác hoặc lưu ý đặc biệt)>"\n' +
+      '      ]\n' +
       '    }\n' +
       '  }\n' +
       '}');
@@ -162,7 +198,20 @@ export class AnalyzeScanUseCase {
         throw new Error('Hình ảnh này dường như không phải là thực phẩm hoặc bao bì. Vui lòng chụp lại.');
       }
       console.warn('[AnalyzeScanUseCase] Could not parse AI result as JSON. Using fallback.', parseError);
-      cleanedResult = aiResult;
+      
+      // Construct robust fallback structured details matching schema to prevent Frontend crash
+      const fallbackDetails = scanType === 'food_check' ? {
+        personalEvaluation: { verdict: 'Không thể phân tích cấu trúc chi tiết từ hình ảnh này.' },
+        demographicInsights: { skinAndFitness: 'Không rõ', familyAndKids: 'Không rõ', chronicDiseases: 'Không rõ' },
+        safetyAnalysis: { visualResult: 'Hình ảnh không đủ độ rõ nét để đánh giá cảm quan trực quan.', safetyReason: 'Lỗi định dạng dữ liệu phản hồi từ AI', expiryInfo: 'Không xác định' },
+        actionableTips: { preparation: [], storage: [] }
+      } : {
+        personalEvaluation: { verdict: 'Không thể phân tích cấu trúc chi tiết từ hình ảnh này.' },
+        demographicInsights: { skinAndFitness: 'Không rõ', familyAndKids: 'Không rõ', chronicDiseases: 'Không rõ' },
+        safetyAnalysis: { additivesDecoded: [], nutritionSummary: { sugar: 'Không rõ', salt: 'Không rõ', badFat: 'Không rõ' } },
+        actionableTips: { recommendations: [] }
+      };
+      cleanedResult = JSON.stringify(fallbackDetails);
     }
 
     return {
