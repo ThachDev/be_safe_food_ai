@@ -59,7 +59,7 @@ export class ChatController {
         return res.status(400).json({ status: 'error', message: 'sessionId is required' });
       }
       
-      const history = await this.getChatHistoryUseCase.execute(firebaseUid, req.params.sessionId as string);
+      const history = await this.getChatHistoryUseCase.execute(firebaseUid, sessionId);
       return res.status(200).json({ status: 'success', data: history });
     } catch (error: any) {
       console.error('ChatController getHistory error:', error);
