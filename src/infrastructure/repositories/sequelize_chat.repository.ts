@@ -1,8 +1,8 @@
 import { injectable } from 'tsyringe';
 import { IChatRepository } from '../../domain/repositories/i_chat.repository';
-import { ChatMessage, ChatSessionDto } from '../../domain/entities/chat_message.entity';
+import { ChatMessage, ChatSessionDto } from '../../domain/entities/chat/chat_message.entity';
 
-import SequelizeChatMessage from '../database/sequelize/models/chat_message.model';
+import SequelizeChatMessage from '../database/sequelize/models/chat/chat_message.model';
 import db from '../database/sequelize/models';
 
 @injectable()
@@ -41,7 +41,7 @@ export class SequelizeChatRepository implements IChatRepository {
     const sessions: any[] = await SequelizeChatMessage.findAll({
       attributes: [
         'sessionId',
-        [db.sequelize.fn('MAX', db.sequelize.col('createdAt')), 'lastActivity']
+        [db.sequelize.fn('MAX', db.sequelize.col('created_at')), 'lastActivity']
       ],
       where: { userId },
       group: ['sessionId'],

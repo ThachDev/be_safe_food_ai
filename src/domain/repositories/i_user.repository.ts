@@ -1,6 +1,6 @@
-import { User } from '../entities/user.entity';
-import { PendingUser } from '../entities/pending_user.entity';
-import { PasswordReset } from '../entities/password_reset.entity';
+import { User } from '../entities/user/user.entity';
+import { PendingUser } from '../entities/auth/pending_user.entity';
+import { PasswordReset } from '../entities/auth/password_reset.entity';
 
 export interface IUserRepository {
   findById(id: number): Promise<User | null>;

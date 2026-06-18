@@ -1,4 +1,4 @@
-import { ScanHistory } from '../entities/scan_history.entity';
+import { ScanHistory } from '../entities/scan/scan_history.entity';
 
 export interface IScanRepository {
   findByIdAndUserId(id: number, userId: number): Promise<ScanHistory | null>;

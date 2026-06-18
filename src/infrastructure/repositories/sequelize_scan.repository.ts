@@ -1,8 +1,8 @@
 import { injectable } from 'tsyringe';
 import { IScanRepository } from '../../domain/repositories/i_scan.repository';
-import { ScanHistory } from '../../domain/entities/scan_history.entity';
+import { ScanHistory } from '../../domain/entities/scan/scan_history.entity';
 
-import SequelizeScanHistory from '../database/sequelize/models/scan_history.model';
+import SequelizeScanHistory from '../database/sequelize/models/scan/scan_history.model';
 
 @injectable()
 export class SequelizeScanRepository implements IScanRepository {

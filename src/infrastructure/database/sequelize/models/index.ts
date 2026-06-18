@@ -1,9 +1,9 @@
 import sequelize from '../connection';
-import User from './user.model';
-import PendingUser from './pending_user.model';
-import PasswordReset from './password_reset.model';
-import ChatMessage from './chat_message.model';
-import ScanHistory from './scan_history.model';
+import User from './user/user.model';
+import PendingUser from './auth/pending_user.model';
+import PasswordReset from './auth/password_reset.model';
+import ChatMessage from './chat/chat_message.model';
+import ScanHistory from './scan/scan_history.model';
 
 const db = {
   sequelize,

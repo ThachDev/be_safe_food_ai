@@ -1,4 +1,4 @@
-import { ChatMessage, ChatSessionDto } from '../entities/chat_message.entity';
+import { ChatMessage, ChatSessionDto } from '../entities/chat/chat_message.entity';
 
 export interface IChatRepository {
   create(chatMessage: Omit<ChatMessage, 'id' | 'createdAt' | 'updatedAt'>): Promise<ChatMessage>;

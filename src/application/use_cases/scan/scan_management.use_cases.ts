@@ -1,7 +1,7 @@
 import { injectable, inject } from 'tsyringe';
 import { IUserRepository } from '../../../domain/repositories/i_user.repository';
 import { IScanRepository } from '../../../domain/repositories/i_scan.repository';
-import { ScanHistory } from '../../../domain/entities/scan_history.entity';
+import { ScanHistory } from '../../../domain/entities/scan/scan_history.entity';
 import { UserNotFoundError } from '../../../domain/errors/auth.error';
 
 @injectable()

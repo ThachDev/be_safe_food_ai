@@ -1,13 +1,13 @@
 import { injectable } from 'tsyringe';
 import { IUserRepository } from '../../domain/repositories/i_user.repository';
-import { User } from '../../domain/entities/user.entity';
-import { PendingUser } from '../../domain/entities/pending_user.entity';
-import { PasswordReset } from '../../domain/entities/password_reset.entity';
+import { User } from '../../domain/entities/user/user.entity';
+import { PendingUser } from '../../domain/entities/auth/pending_user.entity';
+import { PasswordReset } from '../../domain/entities/auth/password_reset.entity';
 
 // Import existing sequelize models
-import SequelizeUser from '../database/sequelize/models/user.model';
-import SequelizePendingUser from '../database/sequelize/models/pending_user.model';
-import SequelizePasswordReset from '../database/sequelize/models/password_reset.model';
+import SequelizeUser from '../database/sequelize/models/user/user.model';
+import SequelizePendingUser from '../database/sequelize/models/auth/pending_user.model';
+import SequelizePasswordReset from '../database/sequelize/models/auth/password_reset.model';
 
 @injectable()
 export class SequelizeUserRepository implements IUserRepository {

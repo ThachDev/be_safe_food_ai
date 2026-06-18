@@ -1,6 +1,6 @@
 import { injectable, inject } from 'tsyringe';
 import { IUserRepository } from '../../../domain/repositories/i_user.repository';
-import { User } from '../../../domain/entities/user.entity';
+import { User } from '../../../domain/entities/user/user.entity';
 
 @injectable()
 export class SyncUserUseCase {
