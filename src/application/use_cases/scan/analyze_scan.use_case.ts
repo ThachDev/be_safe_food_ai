@@ -146,7 +146,7 @@ export class AnalyzeScanUseCase {
       '    },\n' +
       '    "safetyAnalysis": {\n' +
       '      "additivesDecoded": [\n' +
-      '        { "code": "<Mã E-Code hoặc tên hóa chất>", "name": "<Tên thông dụng dễ hiểu bằng tiếng Việt>", "purpose": "<Chức năng phụ gia>", "safetyLevel": "<An toàn / Tránh dùng nhiều / Nguy hại>", "description": "<Giải thích siêu đơn giản tác hại thực tế bằng tiếng Việt>" }\n' +
+      '        { "code": "<Tên viết tắt (Mã E-code) - VD: BHA (320)>", "name": "<Tên thông dụng dễ hiểu bằng tiếng Việt>", "purpose": "<Chức năng phụ gia>", "safetyLevel": "<An toàn / Hạn chế/ Nguy hại>", "description": "<Giải thích siêu đơn giản tác hại thực tế bằng tiếng Việt>" }\n' +
       '      ],\n' +
       '      "nutritionSummary": {\n' +
       '        "sugar": "<Mức Đường: Thấp / Trung bình / Cao kèm định lượng ước tính>",\n' +

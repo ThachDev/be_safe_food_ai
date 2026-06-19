@@ -126,7 +126,8 @@ Người dùng muốn trò chuyện và hỏi bạn thêm chi tiết hoặc lờ
       userId: user.id,
       sessionId: sessionId,
       message: prompt,
-      isUser: true
+      isUser: true,
+      scanHistoryId: scanHistoryId
     });
 
     const finalSystemPrompt = SYSTEM_PROMPT + profileContextStr + (scanContextStr ? '\n' + scanContextStr : '');

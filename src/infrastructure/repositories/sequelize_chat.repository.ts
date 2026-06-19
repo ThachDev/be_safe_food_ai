@@ -15,7 +15,8 @@ export class SequelizeChatRepository implements IChatRepository {
       record.message,
       record.isUser,
       record.createdAt,
-      record.updatedAt
+      record.updatedAt,
+      record.scanHistoryId
     );
   }
 
@@ -24,7 +25,8 @@ export class SequelizeChatRepository implements IChatRepository {
       userId: chatMessage.userId,
       sessionId: chatMessage.sessionId,
       message: chatMessage.message,
-      isUser: chatMessage.isUser
+      isUser: chatMessage.isUser,
+      scanHistoryId: chatMessage.scanHistoryId
     });
     return this.mapToEntity(msg);
   }
@@ -54,12 +56,13 @@ export class SequelizeChatRepository implements IChatRepository {
       const firstMsg = await SequelizeChatMessage.findOne({
         where: { userId, sessionId: session.sessionId as string, isUser: true },
         order: [['createdAt', 'ASC']],
-        attributes: ['message']
+        attributes: ['message', 'scanHistoryId']
       });
       result.push({
         sessionId: session.sessionId as string,
         lastActivity: session.lastActivity as Date,
-        title: firstMsg ? ((firstMsg as any).message.substring(0, 30) + '...') : 'New Chat'
+        title: firstMsg ? ((firstMsg as any).message.substring(0, 30) + '...') : 'New Chat',
+        scanHistoryId: firstMsg ? (firstMsg as any).scanHistoryId : undefined
       });
     }
     return result;

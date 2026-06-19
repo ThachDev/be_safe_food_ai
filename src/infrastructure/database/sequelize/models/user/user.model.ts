@@ -46,7 +46,6 @@ const User = sequelize.define('User', {
   allergies: {
     type: DataTypes.TEXT('long'),
     allowNull: true,
-    defaultValue: '[]',
     field: 'allergies',
     get() {
       const rawValue = this.getDataValue('allergies');
@@ -59,7 +58,6 @@ const User = sequelize.define('User', {
   diseases: {
     type: DataTypes.TEXT('long'),
     allowNull: true,
-    defaultValue: '[]',
     field: 'diseases',
     get() {
       const rawValue = this.getDataValue('diseases');
@@ -72,7 +70,6 @@ const User = sequelize.define('User', {
   healthGoals: {
     type: DataTypes.TEXT('long'),
     allowNull: true,
-    defaultValue: '[]',
     field: 'health_goals',
     get() {
       const rawValue = this.getDataValue('healthGoals');

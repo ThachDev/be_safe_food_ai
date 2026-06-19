@@ -26,6 +26,11 @@ const ChatMessage = sequelize.define('ChatMessage', {
     allowNull: false,
     defaultValue: true,
     field: 'is_user'
+  },
+  scanHistoryId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    field: 'scan_history_id'
   }
 }, {
   tableName: 'chat_messages',
