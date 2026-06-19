@@ -8,7 +8,6 @@ export function newsRoutes(): Router {
   const newsController = container.resolve(NewsController);
 
   router.get('/warnings', authMiddleware, newsController.getNewsWarnings);
-  router.get('/article', authMiddleware, newsController.getNewsArticle);
 
   return router;
 }
