@@ -9,6 +9,9 @@ export class User {
     public dietType: string,
     public allergies: string[],
     public diseases: string[],
-    public healthGoals: string[]
+    public healthGoals: string[],
+    public pushEnabled?: boolean,
+    public emailEnabled?: boolean,
+    public fcmToken?: string | null
   ) {}
 }

@@ -23,7 +23,10 @@ export class SequelizeUserRepository implements IUserRepository {
       record.dietType,
       record.allergies,
       record.diseases,
-      record.healthGoals
+      record.healthGoals,
+      record.pushEnabled,
+      record.emailEnabled,
+      record.fcmToken
     );
   }
 
@@ -80,7 +83,10 @@ export class SequelizeUserRepository implements IUserRepository {
       dietType: user.dietType,
       allergies: user.allergies,
       diseases: user.diseases,
-      healthGoals: user.healthGoals
+      healthGoals: user.healthGoals,
+      pushEnabled: user.pushEnabled,
+      emailEnabled: user.emailEnabled,
+      fcmToken: user.fcmToken
     });
     return this.mapToUserEntity(record);
   }

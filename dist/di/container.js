@@ -1,0 +1,23 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.container = void 0;
+require("reflect-metadata");
+const tsyringe_1 = require("tsyringe");
+Object.defineProperty(exports, "container", { enumerable: true, get: function () { return tsyringe_1.container; } });
+const sequelize_user_repository_1 = require("../infrastructure/repositories/sequelize_user.repository");
+const firebase_identity_provider_service_1 = require("../infrastructure/services/firebase_identity_provider.service");
+const auth_mail_service_1 = require("../infrastructure/services/auth_mail.service");
+const sequelize_chat_repository_1 = require("../infrastructure/repositories/sequelize_chat.repository");
+const sequelize_scan_repository_1 = require("../infrastructure/repositories/sequelize_scan.repository");
+const groq_generative_ai_service_1 = require("../infrastructure/services/groq_generative_ai.service");
+const cloudinary_wrapper_service_1 = require("../infrastructure/services/cloudinary_wrapper.service");
+const google_news_provider_service_1 = require("../infrastructure/services/google_news_provider.service");
+// Register implementations for interfaces
+tsyringe_1.container.register('IUserRepository', { useClass: sequelize_user_repository_1.SequelizeUserRepository });
+tsyringe_1.container.register('IIdentityProviderService', { useClass: firebase_identity_provider_service_1.FirebaseIdentityProviderService });
+tsyringe_1.container.register('IMailService', { useClass: auth_mail_service_1.AuthMailService });
+tsyringe_1.container.register('IChatRepository', { useClass: sequelize_chat_repository_1.SequelizeChatRepository });
+tsyringe_1.container.register('IScanRepository', { useClass: sequelize_scan_repository_1.SequelizeScanRepository });
+tsyringe_1.container.register('IGenerativeAiService', { useClass: groq_generative_ai_service_1.GroqGenerativeAiService });
+tsyringe_1.container.register('ICloudinaryService', { useClass: cloudinary_wrapper_service_1.CloudinaryWrapperService });
+tsyringe_1.container.register('INewsProviderService', { useClass: google_news_provider_service_1.GoogleNewsProviderService });

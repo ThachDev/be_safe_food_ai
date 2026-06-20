@@ -78,6 +78,23 @@ const User = sequelize.define('User', {
     set(value) {
       this.setDataValue('healthGoals', typeof value === 'string' ? value : JSON.stringify(value || []));
     }
+  },
+  pushEnabled: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: true,
+    field: 'push_enabled'
+  },
+  emailEnabled: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: true,
+    field: 'email_enabled'
+  },
+  fcmToken: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'fcm_token'
   }
 }, {
   tableName: 'users',

@@ -5,6 +5,7 @@ import { scanRoutes } from '../interfaces/web/routes/scan.routes';
 import { userRoutes } from '../interfaces/web/routes/user.routes';
 import { newsRoutes } from '../interfaces/web/routes/news.routes';
 import { profileRoutes } from '../interfaces/web/routes/profile.routes';
+import { notificationTriggerRoutes } from '../interfaces/web/routes/notification_trigger.routes';
 
 const router = Router();
 
@@ -13,6 +14,7 @@ router.use('/auth', authRoutes());
 router.use('/users', userRoutes());
 router.use('/chat', chatRoutes());
 router.use('/news', newsRoutes());
+router.use('/news', notificationTriggerRoutes());
 router.use('/scans', scanRoutes());
 router.use('/profile', profileRoutes());
 
