@@ -8,6 +8,8 @@ export function newsRoutes(): Router {
   const newsController = container.resolve(NewsController);
 
   router.get('/warnings', authMiddleware, newsController.getNewsWarnings);
+  router.get('/cron-sync', newsController.cronSync);
 
   return router;
 }
+

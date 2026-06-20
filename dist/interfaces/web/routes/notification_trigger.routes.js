@@ -7,6 +7,32 @@ const sequelize_1 = require("sequelize");
 const fcm_notification_service_1 = require("../../../infrastructure/services/fcm_notification.service");
 const models_1 = require("../../../infrastructure/database/sequelize/models");
 const constants_1 = require("../../../shared/constants");
+function normalizeString(str) {
+    return str
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // remove accents
+        .replace(/[^\w\s]/g, '') // remove special characters
+        .trim();
+}
+function isSemanticMatch(nameA, nameB) {
+    const normA = normalizeString(nameA);
+    const normB = normalizeString(nameB);
+    const tokensA = new Set(normA.split(/\s+/).filter(w => w.length > 1));
+    const tokensB = new Set(normB.split(/\s+/).filter(w => w.length > 1));
+    if (tokensA.size === 0 || tokensB.size === 0)
+        return false;
+    const intersection = new Set([...tokensA].filter(x => tokensB.has(x)));
+    const minSize = Math.min(tokensA.size, tokensB.size);
+    const overlapRatio = intersection.size / minSize;
+    const isSubstring = normA.includes(normB) || normB.includes(normA);
+    return overlapRatio >= 0.7 || isSubstring;
+}
+function isAllergenMatch(userAllergy, targetAllergen) {
+    const normUser = normalizeString(userAllergy);
+    const normTarget = normalizeString(targetAllergen);
+    return normUser.includes(normTarget) || normTarget.includes(normUser);
+}
 function notificationTriggerRoutes() {
     const router = (0, express_1.Router)();
     const fcmService = tsyringe_1.container.resolve(fcm_notification_service_1.FcmNotificationService);
@@ -20,15 +46,20 @@ function notificationTriggerRoutes() {
                     message: 'productName and reason are required'
                 });
             }
-            // Find scan histories matching the product name
+            // Extract unique words from productName for a loose database search
+            const queryTokens = productName.split(/\s+/).filter((t) => t.length > 1);
             const histories = await models_1.ScanHistory.findAll({
                 where: {
-                    title: {
-                        [sequelize_1.Op.like]: `%${productName}%`
-                    }
+                    [sequelize_1.Op.or]: queryTokens.map((t) => ({
+                        title: {
+                            [sequelize_1.Op.like]: `%${t}%`
+                        }
+                    }))
                 }
             });
-            if (histories.length === 0) {
+            // Semantic filtering in memory
+            const matchedHistories = histories.filter((h) => isSemanticMatch(h.title, productName));
+            if (matchedHistories.length === 0) {
                 return res.status(constants_1.HttpStatus.OK).json({
                     success: true,
                     message: 'No users have scanned this product. No notifications sent.',
@@ -36,7 +67,7 @@ function notificationTriggerRoutes() {
                 });
             }
             // Get unique user IDs
-            const userIds = Array.from(new Set(histories.map((h) => h.userId)));
+            const userIds = Array.from(new Set(matchedHistories.map((h) => h.userId)));
             // Find matching users with push enabled and active fcmToken
             const users = await models_1.User.findAll({
                 where: {
@@ -99,8 +130,8 @@ function notificationTriggerRoutes() {
             for (const user of users) {
                 // allergies is a JSON array
                 const userAllergies = user.allergies || [];
-                // Normalize strings to match case-insensitively or simple include
-                const hasAllergy = userAllergies.some((a) => a.toLowerCase().trim() === allergen.toLowerCase().trim());
+                // Match allergen semantically (e.g. "Đậu phộng (Lạc)" matches "Đậu phộng")
+                const hasAllergy = userAllergies.some((a) => isAllergenMatch(a, allergen));
                 if (hasAllergy) {
                     matchedUserIds.push(user.id);
                     const success = await fcmService.sendPushNotification(user.id, user.fcmToken, '⚠️ CẢNH BÁO DỊ ỨNG CÁ NHÂN HÓA', `Lưu ý: Món "${productName}" mới ra mắt có chứa ${allergen}. Hãy cẩn thận vì nó có trong danh sách dị ứng của bạn!`, {

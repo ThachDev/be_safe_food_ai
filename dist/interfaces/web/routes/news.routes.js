@@ -9,5 +9,6 @@ function newsRoutes() {
     const router = (0, express_1.Router)();
     const newsController = tsyringe_1.container.resolve(news_controller_1.NewsController);
     router.get('/warnings', auth_middleware_1.authMiddleware, newsController.getNewsWarnings);
+    router.get('/cron-sync', newsController.cronSync);
     return router;
 }

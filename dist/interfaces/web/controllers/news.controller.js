@@ -15,11 +15,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.NewsController = void 0;
 const tsyringe_1 = require("tsyringe");
 const news_management_use_cases_1 = require("../../../application/use_cases/news/news_management.use_cases");
+const news_cron_sync_use_case_1 = require("../../../application/use_cases/news/news_cron_sync.use_case");
 const constants_1 = require("../../../shared/constants");
 let NewsController = class NewsController {
     getNewsWarningsUseCase;
-    constructor(getNewsWarningsUseCase) {
+    cronSyncNewsUseCase;
+    constructor(getNewsWarningsUseCase, cronSyncNewsUseCase) {
         this.getNewsWarningsUseCase = getNewsWarningsUseCase;
+        this.cronSyncNewsUseCase = cronSyncNewsUseCase;
     }
     getNewsWarnings = async (req, res, next) => {
         try {
@@ -35,10 +38,30 @@ let NewsController = class NewsController {
             next(error);
         }
     };
+    cronSync = async (req, res, next) => {
+        try {
+            const token = req.query.token;
+            const expectedToken = process.env.CRON_SYNC_TOKEN || 'safe_food_ai_secret';
+            if (token !== expectedToken) {
+                return res.status(constants_1.HttpStatus.UNAUTHORIZED).json({
+                    success: false,
+                    message: 'Unauthorized. Invalid security token.'
+                });
+            }
+            const result = await this.cronSyncNewsUseCase.execute();
+            res.status(constants_1.HttpStatus.OK).json(result);
+        }
+        catch (error) {
+            console.error('[NewsController] Error in cronSync:', error);
+            next(error);
+        }
+    };
 };
 exports.NewsController = NewsController;
 exports.NewsController = NewsController = __decorate([
     (0, tsyringe_1.injectable)(),
     __param(0, (0, tsyringe_1.inject)(news_management_use_cases_1.GetNewsWarningsUseCase)),
-    __metadata("design:paramtypes", [news_management_use_cases_1.GetNewsWarningsUseCase])
+    __param(1, (0, tsyringe_1.inject)(news_cron_sync_use_case_1.CronSyncNewsUseCase)),
+    __metadata("design:paramtypes", [news_management_use_cases_1.GetNewsWarningsUseCase,
+        news_cron_sync_use_case_1.CronSyncNewsUseCase])
 ], NewsController);

@@ -5,6 +5,39 @@ import { FcmNotificationService } from '../../../infrastructure/services/fcm_not
 import { ScanHistory, User } from '../../../infrastructure/database/sequelize/models';
 import { HttpStatus } from '../../../shared/constants';
 
+function normalizeString(str: string): string {
+  return str
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // remove accents
+    .replace(/[^\w\s]/g, '') // remove special characters
+    .trim();
+}
+
+function isSemanticMatch(nameA: string, nameB: string): boolean {
+  const normA = normalizeString(nameA);
+  const normB = normalizeString(nameB);
+  
+  const tokensA = new Set(normA.split(/\s+/).filter(w => w.length > 1));
+  const tokensB = new Set(normB.split(/\s+/).filter(w => w.length > 1));
+  
+  if (tokensA.size === 0 || tokensB.size === 0) return false;
+  
+  const intersection = new Set([...tokensA].filter(x => tokensB.has(x)));
+  const minSize = Math.min(tokensA.size, tokensB.size);
+  const overlapRatio = intersection.size / minSize;
+  
+  const isSubstring = normA.includes(normB) || normB.includes(normA);
+  
+  return overlapRatio >= 0.7 || isSubstring;
+}
+
+function isAllergenMatch(userAllergy: string, targetAllergen: string): boolean {
+  const normUser = normalizeString(userAllergy);
+  const normTarget = normalizeString(targetAllergen);
+  return normUser.includes(normTarget) || normTarget.includes(normUser);
+}
+
 export function notificationTriggerRoutes(): Router {
   const router = Router();
   const fcmService = container.resolve(FcmNotificationService);
@@ -20,16 +53,23 @@ export function notificationTriggerRoutes(): Router {
         });
       }
 
-      // Find scan histories matching the product name
+      // Extract unique words from productName for a loose database search
+      const queryTokens = productName.split(/\s+/).filter((t: string) => t.length > 1);
+      
       const histories = await ScanHistory.findAll({
         where: {
-          title: {
-            [Op.like]: `%${productName}%`
-          }
+          [Op.or]: queryTokens.map((t: string) => ({
+            title: {
+              [Op.like]: `%${t}%`
+            }
+          }))
         }
       });
 
-      if (histories.length === 0) {
+      // Semantic filtering in memory
+      const matchedHistories = histories.filter((h: any) => isSemanticMatch(h.title, productName));
+
+      if (matchedHistories.length === 0) {
         return res.status(HttpStatus.OK).json({
           success: true,
           message: 'No users have scanned this product. No notifications sent.',
@@ -38,7 +78,7 @@ export function notificationTriggerRoutes(): Router {
       }
 
       // Get unique user IDs
-      const userIds = Array.from(new Set(histories.map((h: any) => h.userId)));
+      const userIds = Array.from(new Set(matchedHistories.map((h: any) => h.userId)));
 
       // Find matching users with push enabled and active fcmToken
       const users = await User.findAll({
@@ -112,10 +152,8 @@ export function notificationTriggerRoutes(): Router {
       for (const user of users as any[]) {
         // allergies is a JSON array
         const userAllergies: string[] = user.allergies || [];
-        // Normalize strings to match case-insensitively or simple include
-        const hasAllergy = userAllergies.some(
-          (a) => a.toLowerCase().trim() === allergen.toLowerCase().trim()
-        );
+        // Match allergen semantically (e.g. "Đậu phộng (Lạc)" matches "Đậu phộng")
+        const hasAllergy = userAllergies.some((a) => isAllergenMatch(a, allergen));
 
         if (hasAllergy) {
           matchedUserIds.push(user.id);
@@ -152,3 +190,4 @@ export function notificationTriggerRoutes(): Router {
 
   return router;
 }
+
