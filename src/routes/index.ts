@@ -6,6 +6,7 @@ import { userRoutes } from '../interfaces/web/routes/user.routes';
 import { newsRoutes } from '../interfaces/web/routes/news.routes';
 import { profileRoutes } from '../interfaces/web/routes/profile.routes';
 import { notificationTriggerRoutes } from '../interfaces/web/routes/notification_trigger.routes';
+import { appRoutes } from '../interfaces/web/routes/app.routes';
 
 const router = Router();
 
@@ -17,6 +18,7 @@ router.use('/news', newsRoutes());
 router.use('/news', notificationTriggerRoutes());
 router.use('/scans', scanRoutes());
 router.use('/profile', profileRoutes());
+router.use('/app', appRoutes());
 
 // Health check endpoint
 router.get('/health', (req: Request, res: Response) => {
