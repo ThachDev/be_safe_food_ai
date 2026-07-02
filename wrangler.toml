@@ -8,17 +8,25 @@ compatibility_flags = [ "nodejs_compat" ]
 binding = "DB"
 database_name = "safe-food-ai-db"
 database_id = "0ee12904-560c-494b-9209-11ccbfc1ecef"
+preview_database_id = "5ccd3422-dc7f-4e59-aa81-68eca06c0996"
 
 # KV Namespace (for OTP and temporary state)
 [[kv_namespaces]]
 binding = "KV"
 id = "e7d225e955f645d9bcda35fe69ab036f"
+preview_id = "73f328062e234e189bc79d30cc212af8"
 
 # R2 Bucket (for image uploads/storage)
 [[r2_buckets]]
 binding = "BUCKET"
 bucket_name = "safe-food-ai-bucket"
+preview_bucket_name = "safe-food-ai-bucket-preview"
 
 [vars]
 NODE_ENV = "development"
 # Place other public environment variables here
+
+[dev]
+ip = "0.0.0.0"
+port = 5001
+local_protocol = "http"

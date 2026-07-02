@@ -387,7 +387,8 @@ api.get('/news/warnings', authMiddleware, async (c) => {
       data: articles
     });
   } catch (error: any) {
-    return c.json({ success: false, message: error.message }, 500);
+    console.error('[news/warnings] Error:', error?.message, error?.stack);
+    return c.json({ success: false, message: error.message, stack: error?.stack }, 500);
   }
 });
 
