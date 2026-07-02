@@ -1,13 +1,13 @@
-import { injectable, inject } from 'tsyringe';
+
 import { IUserRepository } from '../../../domain/repositories/i_user.repository';
 import { IIdentityProviderService } from '../../interfaces/i_identity_provider.service';
 import { InvalidOtpError } from '../../../domain/errors/auth.error';
 
-@injectable()
+
 export class ResetPasswordUseCase {
   constructor(
-    @inject('IUserRepository') private userRepository: IUserRepository,
-    @inject('IIdentityProviderService') private identityProvider: IIdentityProviderService
+    private userRepository: IUserRepository,
+    private identityProvider: IIdentityProviderService
   ) {}
 
   async execute(email: string, otp: string, newPassword: string): Promise<{ success: boolean; message: string }> {

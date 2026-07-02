@@ -5,4 +5,5 @@ export interface IScanRepository {
   create(scan: Omit<ScanHistory, 'id' | 'createdAt' | 'updatedAt'>): Promise<ScanHistory>;
   findAllByUserId(userId: number): Promise<ScanHistory[]>;
   delete(id: number, userId: number): Promise<boolean>;
+  findByTitleTokens(tokens: string[]): Promise<ScanHistory[]>;
 }

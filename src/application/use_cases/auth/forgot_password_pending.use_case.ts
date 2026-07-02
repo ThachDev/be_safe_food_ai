@@ -1,13 +1,13 @@
-import { injectable, inject } from 'tsyringe';
+
 import { IUserRepository } from '../../../domain/repositories/i_user.repository';
 import { IMailService } from '../../interfaces/i_mail.service';
 import { UserNotFoundError } from '../../../domain/errors/auth.error';
 
-@injectable()
+
 export class ForgotPasswordPendingUseCase {
   constructor(
-    @inject('IUserRepository') private userRepository: IUserRepository,
-    @inject('IMailService') private mailService: IMailService
+    private userRepository: IUserRepository,
+    private mailService: IMailService
   ) {}
 
   async execute(email: string): Promise<{ success: boolean; message: string }> {

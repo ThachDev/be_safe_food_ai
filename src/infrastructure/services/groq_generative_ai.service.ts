@@ -1,16 +1,14 @@
-import { injectable } from 'tsyringe';
 import { IGenerativeAiService } from '../../application/interfaces/i_generative_ai.service';
-const Groq = require('groq-sdk');
+import Groq from 'groq-sdk';
 
 const GROQ_MODEL_TEXT = 'llama-3.3-70b-versatile';
 const GROQ_MODEL_VISION = 'meta-llama/llama-4-scout-17b-16e-instruct';
 
-@injectable()
 export class GroqGenerativeAiService implements IGenerativeAiService {
-  private groq: any;
+  private groq: Groq;
 
-  constructor() {
-    const apiKey = process.env.GROQ_API_KEY;
+  constructor(env: any) {
+    const apiKey = env.GROQ_API_KEY;
     if (!apiKey) {
       throw new Error('GROQ_API_KEY is not configured in backend');
     }
@@ -68,9 +66,9 @@ export class GroqGenerativeAiService implements IGenerativeAiService {
       });
       return completion.choices[0]?.message?.content ?? '';
     } catch (e: any) {
-      console.warn('[AIService] Llama 4 Scout failed, falling back to Llama 3.2 Vision:', e.message);
+      console.warn('[AIService] Llama 4 Scout failed, falling back:', e.message);
       const completion = await this.groq.chat.completions.create({
-        model: GROQ_MODEL_VISION, // fallback model if needed
+        model: GROQ_MODEL_VISION,
         messages: [
           { 
             role: 'user', 

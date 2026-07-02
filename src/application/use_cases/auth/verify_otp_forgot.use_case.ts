@@ -1,11 +1,11 @@
-import { injectable, inject } from 'tsyringe';
+
 import { IUserRepository } from '../../../domain/repositories/i_user.repository';
 import { InvalidOtpError } from '../../../domain/errors/auth.error';
 
-@injectable()
+
 export class VerifyOtpForgotUseCase {
   constructor(
-    @inject('IUserRepository') private userRepository: IUserRepository
+    private userRepository: IUserRepository
   ) {}
 
   async execute(email: string, otp: string): Promise<{ success: boolean; message: string }> {

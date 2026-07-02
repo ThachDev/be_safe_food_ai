@@ -17,4 +17,6 @@ export interface IUserRepository {
   findPasswordResetByEmail(email: string): Promise<PasswordReset | null>;
   savePasswordReset(reset: Omit<PasswordReset, 'id'> | PasswordReset): Promise<PasswordReset>;
   deletePasswordReset(email: string): Promise<void>;
+
+  findPushEnabledUsers(): Promise<User[]>;
 }

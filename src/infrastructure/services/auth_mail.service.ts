@@ -1,29 +1,28 @@
-import { injectable } from 'tsyringe';
 import { IMailService } from '../../application/interfaces/i_mail.service';
 import nodemailer from 'nodemailer';
 
-@injectable()
 export class AuthMailService implements IMailService {
   private transporter: nodemailer.Transporter;
+  private fromName: string;
+  private fromEmail: string;
 
-  constructor() {
+  constructor(env: any) {
     this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: parseInt(process.env.SMTP_PORT || '587', 10),
+      host: env.SMTP_HOST || 'smtp.gmail.com',
+      port: parseInt(env.SMTP_PORT || '587', 10),
       secure: false,
       auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD,
+        user: env.SMTP_USER,
+        pass: env.SMTP_PASSWORD,
       },
     });
+    this.fromName = env.SMTP_FROM_NAME || 'Safe Food AI';
+    this.fromEmail = env.SMTP_FROM_EMAIL || env.SMTP_USER;
   }
 
   async sendOtpEmail(toEmail: string, otpCode: string, userName: string): Promise<any> {
-    const fromName = process.env.SMTP_FROM_NAME || 'Safe Food AI';
-    const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER;
-
     const mailOptions = {
-      from: `"${fromName}" <${fromEmail}>`,
+      from: `"${this.fromName}" <${this.fromEmail}>`,
       to: toEmail,
       subject: 'Xác thực tài khoản Safe Food AI',
       html: `
@@ -42,11 +41,8 @@ export class AuthMailService implements IMailService {
   }
 
   async sendForgotPasswordOtpEmail(toEmail: string, otpCode: string, userName: string): Promise<any> {
-    const fromName = process.env.SMTP_FROM_NAME || 'Safe Food AI';
-    const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER;
-
     const mailOptions = {
-      from: `"${fromName}" <${fromEmail}>`,
+      from: `"${this.fromName}" <${this.fromEmail}>`,
       to: toEmail,
       subject: 'Khôi phục mật khẩu Safe Food AI',
       html: `

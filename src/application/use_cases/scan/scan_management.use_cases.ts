@@ -1,14 +1,14 @@
-import { injectable, inject } from 'tsyringe';
+
 import { IUserRepository } from '../../../domain/repositories/i_user.repository';
 import { IScanRepository } from '../../../domain/repositories/i_scan.repository';
 import { ScanHistory } from '../../../domain/entities/scan/scan_history.entity';
 import { UserNotFoundError } from '../../../domain/errors/auth.error';
 
-@injectable()
+
 export class CreateScanUseCase {
   constructor(
-    @inject('IUserRepository') private userRepository: IUserRepository,
-    @inject('IScanRepository') private scanRepository: IScanRepository
+    private userRepository: IUserRepository,
+    private scanRepository: IScanRepository
   ) {}
 
   async execute(firebaseUid: string, data: any) {
@@ -37,11 +37,11 @@ export class CreateScanUseCase {
   }
 }
 
-@injectable()
+
 export class GetScansUseCase {
   constructor(
-    @inject('IUserRepository') private userRepository: IUserRepository,
-    @inject('IScanRepository') private scanRepository: IScanRepository
+    private userRepository: IUserRepository,
+    private scanRepository: IScanRepository
   ) {}
 
   async execute(firebaseUid: string) {
@@ -52,11 +52,11 @@ export class GetScansUseCase {
   }
 }
 
-@injectable()
+
 export class DeleteScanUseCase {
   constructor(
-    @inject('IUserRepository') private userRepository: IUserRepository,
-    @inject('IScanRepository') private scanRepository: IScanRepository
+    private userRepository: IUserRepository,
+    private scanRepository: IScanRepository
   ) {}
 
   async execute(firebaseUid: string, id: number) {

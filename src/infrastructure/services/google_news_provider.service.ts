@@ -1,9 +1,9 @@
-import { injectable } from 'tsyringe';
+
 import { INewsProviderService } from '../../application/interfaces/news/i_news_provider.service';
 import Parser from 'rss-parser';
 import { GoogleDecoder } from 'google-news-url-decoder';
 
-@injectable()
+
 export class GoogleNewsProviderService implements INewsProviderService {
   private parser = new Parser();
   private decoder = new GoogleDecoder();

@@ -1,15 +1,15 @@
-import { injectable, inject } from 'tsyringe';
+
 import { IUserRepository } from '../../../domain/repositories/i_user.repository';
 import { IGenerativeAiService } from '../../interfaces/i_generative_ai.service';
 import { ICloudinaryService } from '../../interfaces/i_cloudinary.service';
 import { UserNotFoundError } from '../../../domain/errors/auth.error';
 
-@injectable()
+
 export class AnalyzeScanUseCase {
   constructor(
-    @inject('IUserRepository') private userRepository: IUserRepository,
-    @inject('IGenerativeAiService') private aiService: IGenerativeAiService,
-    @inject('ICloudinaryService') private cloudinaryService: ICloudinaryService
+    private userRepository: IUserRepository,
+    private aiService: IGenerativeAiService,
+    private cloudinaryService: ICloudinaryService
   ) {}
 
   async execute(firebaseUid: string, scanType: string, base64Image: string, additionalContext?: any) {

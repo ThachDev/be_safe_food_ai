@@ -1,0 +1,24 @@
+name = "be-safe-food-ai"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = [ "nodejs_compat" ]
+
+# Database (Cloudflare D1)
+[[d1_databases]]
+binding = "DB"
+database_name = "safe-food-ai-db"
+database_id = "0ee12904-560c-494b-9209-11ccbfc1ecef"
+
+# KV Namespace (for OTP and temporary state)
+[[kv_namespaces]]
+binding = "KV"
+id = "e7d225e955f645d9bcda35fe69ab036f"
+
+# R2 Bucket (for image uploads/storage)
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "safe-food-ai-bucket"
+
+[vars]
+NODE_ENV = "development"
+# Place other public environment variables here

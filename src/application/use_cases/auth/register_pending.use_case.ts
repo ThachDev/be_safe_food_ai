@@ -1,13 +1,13 @@
-import { injectable, inject } from 'tsyringe';
+
 import { IUserRepository } from '../../../domain/repositories/i_user.repository';
 import { IMailService } from '../../interfaces/i_mail.service';
 import { EmailAlreadyExistsError } from '../../../domain/errors/auth.error';
 
-@injectable()
+
 export class RegisterPendingUseCase {
   constructor(
-    @inject('IUserRepository') private userRepository: IUserRepository,
-    @inject('IMailService') private mailService: IMailService
+    private userRepository: IUserRepository,
+    private mailService: IMailService
   ) {}
 
   async execute(name: string, email: string, passwordHash: string): Promise<{ success: boolean; message: string }> {

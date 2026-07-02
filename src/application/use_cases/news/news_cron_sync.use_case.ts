@@ -1,10 +1,8 @@
-import { injectable, inject } from 'tsyringe';
 import { INewsProviderService } from '../../interfaces/news/i_news_provider.service';
 import { IGenerativeAiService } from '../../interfaces/i_generative_ai.service';
 import { FcmNotificationService } from '../../../infrastructure/services/fcm_notification.service';
-import SequelizeScanHistory from '../../../infrastructure/database/sequelize/models/scan/scan_history.model';
-import SequelizeUser from '../../../infrastructure/database/sequelize/models/user/user.model';
-import { Op } from 'sequelize';
+import { IUserRepository } from '../../../domain/repositories/i_user.repository';
+import { IScanRepository } from '../../../domain/repositories/i_scan.repository';
 
 interface ExtractedWarning {
   type: 'recall' | 'allergy';
@@ -47,12 +45,13 @@ function isAllergenMatch(userAllergy: string, targetAllergen: string): boolean {
   return normUser.includes(normTarget) || normTarget.includes(normUser);
 }
 
-@injectable()
 export class CronSyncNewsUseCase {
   constructor(
-    @inject('INewsProviderService') private newsProvider: INewsProviderService,
-    @inject('IGenerativeAiService') private aiService: IGenerativeAiService,
-    @inject(FcmNotificationService) private fcmService: FcmNotificationService
+    private newsProvider: INewsProviderService,
+    private aiService: IGenerativeAiService,
+    private fcmService: FcmNotificationService,
+    private userRepository: IUserRepository,
+    private scanRepository: IScanRepository
   ) {}
 
   async execute(): Promise<{ success: boolean; warningsFound: number; notificationsSent: number; details: any[] }> {
@@ -94,7 +93,6 @@ Chỉ trả về chuỗi JSON thô, không kèm thẻ markdown hay bất kỳ t�
       
       let parsedResponse: { warnings: ExtractedWarning[] };
       try {
-        // Clean up markdown markers if AI mistakenly included them
         const cleanedJson = aiResponse.replace(/```json/g, '').replace(/```/g, '').trim();
         parsedResponse = JSON.parse(cleanedJson);
       } catch (e: any) {
@@ -114,47 +112,33 @@ Chỉ trả về chuỗi JSON thô, không kèm thẻ markdown hay bất kỳ t�
         let matchedUsersCount = 0;
 
         if (warning.type === 'recall' && warning.productName) {
-          // Extract unique words from productName for a loose database search
           const queryTokens = warning.productName.split(/\s+/).filter((t: string) => t.length > 1);
           
-          const histories = await SequelizeScanHistory.findAll({
-            where: {
-              [Op.or]: queryTokens.map((t: string) => ({
-                title: {
-                  [Op.like]: `%${t}%`
-                }
-              }))
-            }
-          });
-
-          // Semantic filtering in memory
+          const histories = await this.scanRepository.findByTitleTokens(queryTokens);
           const matchedHistories = histories.filter((h: any) => isSemanticMatch(h.title, warning.productName));
 
           if (matchedHistories.length > 0) {
             const userIds = Array.from(new Set(matchedHistories.map((h: any) => h.userId)));
             matchedUsersCount = userIds.length;
 
-            const users = await SequelizeUser.findAll({
-              where: {
-                id: { [Op.in]: userIds },
-                pushEnabled: true,
-                fcmToken: { [Op.ne]: null }
-              }
-            });
+            const allPushUsers = await this.userRepository.findPushEnabledUsers();
+            const users = allPushUsers.filter(u => userIds.includes(u.id));
 
-            for (const user of users as any[]) {
-              const success = await this.fcmService.sendPushNotification(
-                user.id,
-                user.fcmToken,
-                '🔴 CẢNH BÁO THU HỒI KHẨN CẤP',
-                `Sản phẩm "${warning.productName}" bạn từng quét vừa bị yêu cầu thu hồi do ${warning.reason}. Vui lòng ngừng sử dụng!`,
-                {
-                  type: 'recall',
-                  url: warning.url || '',
-                  productName: warning.productName
-                }
-              );
-              if (success) sentCount++;
+            for (const user of users) {
+              if (user.fcmToken) {
+                const success = await this.fcmService.sendPushNotification(
+                  user.id,
+                  user.fcmToken,
+                  '🔴 CẢNH BÁO THU HỒI KHẨN CẤP',
+                  `Sản phẩm "${warning.productName}" bạn từng quét vừa bị yêu cầu thu hồi do ${warning.reason}. Vui lòng ngừng sử dụng!`,
+                  {
+                    type: 'recall',
+                    url: warning.url || '',
+                    productName: warning.productName
+                  }
+                );
+                if (success) sentCount++;
+              }
             }
           }
           details.push({
@@ -164,19 +148,13 @@ Chỉ trả về chuỗi JSON thô, không kèm thẻ markdown hay bất kỳ t�
             notificationsSent: sentCount
           });
         } else if (warning.type === 'allergy' && warning.productName && warning.allergen) {
-          // Find users with push enabled and active fcmToken
-          const users = await SequelizeUser.findAll({
-            where: {
-              pushEnabled: true,
-              fcmToken: { [Op.ne]: null }
-            }
-          });
+          const users = await this.userRepository.findPushEnabledUsers();
 
-          for (const user of users as any[]) {
+          for (const user of users) {
             const userAllergies: string[] = user.allergies || [];
             const hasAllergy = userAllergies.some((a) => isAllergenMatch(a, warning.allergen!));
 
-            if (hasAllergy) {
+            if (hasAllergy && user.fcmToken) {
               matchedUsersCount++;
               const success = await this.fcmService.sendPushNotification(
                 user.id,

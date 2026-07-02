@@ -1,11 +1,11 @@
-import { injectable, inject } from 'tsyringe';
+
 import { IUserRepository } from '../../../domain/repositories/i_user.repository';
 import { User } from '../../../domain/entities/user/user.entity';
 
-@injectable()
+
 export class SyncUserUseCase {
   constructor(
-    @inject('IUserRepository') private userRepository: IUserRepository
+    private userRepository: IUserRepository
   ) {}
 
   async execute(uid: string, email: string, name?: string, picture?: string): Promise<{ user: User; isNew: boolean }> {
