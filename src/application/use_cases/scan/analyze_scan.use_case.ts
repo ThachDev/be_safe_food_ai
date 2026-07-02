@@ -197,7 +197,7 @@ export class AnalyzeScanUseCase {
       if (parseError.message === 'NOT_FOOD') {
         throw new Error('Hình ảnh này dường như không phải là thực phẩm hoặc bao bì. Vui lòng chụp lại.');
       }
-      console.warn('[AnalyzeScanUseCase] Could not parse AI result as JSON. Using fallback.', parseError);
+      console.warn('[AnalyzeScanUseCase] Could not parse AI result as JSON. Using fallback.', parseError, '\nRaw AI result:', aiResult);
       
       // Construct robust fallback structured details matching schema to prevent Frontend crash
       const fallbackDetails = scanType === 'food_check' ? {

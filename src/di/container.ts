@@ -4,7 +4,7 @@ import { D1ChatRepository } from '../infrastructure/repositories/d1_chat.reposit
 
 import { FirebaseIdentityProviderService } from '../infrastructure/services/firebase_identity_provider.service';
 import { AuthMailService } from '../infrastructure/services/auth_mail.service';
-import { GroqGenerativeAiService } from '../infrastructure/services/groq_generative_ai.service';
+import { CloudflareGenerativeAiService } from '../infrastructure/services/cloudflare_generative_ai.service';
 import { R2StorageService } from '../infrastructure/services/r2_storage.service';
 import { GoogleNewsProviderService } from '../infrastructure/services/google_news_provider.service';
 import { FcmNotificationService } from '../infrastructure/services/fcm_notification.service';
@@ -35,7 +35,7 @@ export function getContainer(env: any, requestHost?: string) {
   // Services
   const identityProvider = new FirebaseIdentityProviderService(env);
   const mailService = new AuthMailService(env);
-  const aiService = new GroqGenerativeAiService(env);
+  const aiService = new CloudflareGenerativeAiService(env);
   const cloudinaryService = new R2StorageService(env.BUCKET, requestHost);
   const newsProvider = new GoogleNewsProviderService();
   const fcmService = new FcmNotificationService(userRepository, env);

@@ -24,9 +24,13 @@ preview_bucket_name = "safe-food-ai-bucket"
 
 [vars]
 NODE_ENV = "development"
+GROQ_API_KEY = "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"
 # Place other public environment variables here
 
 [dev]
 ip = "0.0.0.0"
 port = 5001
 local_protocol = "http"
+
+[ai]
+binding = "AI"
