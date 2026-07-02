@@ -1,15 +1,15 @@
 # Be Safe Food AI (Backend Hub)
 
-[![Node.js Version](https://img.shields.io/badge/node-v20+-green.svg?style=flat-square)](https://nodejs.org/)
+[![Runtime](https://img.shields.io/badge/Runtime-Cloudflare%20Workers-orange.svg?style=flat-square)](https://workers.cloudflare.com/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue.svg?style=flat-square)](https://www.typescriptlang.org/)
-[![Express.js](https://img.shields.io/badge/Express-5.2--orange.svg?style=flat-square)](https://expressjs.com/)
-[![Database](https://img.shields.io/badge/MySQL-Sequelize-blue.svg?style=flat-square)](https://sequelize.org/)
+[![Hono](https://img.shields.io/badge/Hono-v4-blueviolet.svg?style=flat-square)](https://hono.dev/)
+[![Database](https://img.shields.io/badge/D1-SQLite-blue.svg?style=flat-square)](https://developers.cloudflare.com/d1/)
 [![Architecture](https://img.shields.io/badge/Architecture-Clean--Arch-purple.svg?style=flat-square)](#-architecture--design-patterns)
 [![License](https://img.shields.io/badge/license-ISC-green.svg?style=flat-square)](LICENSE)
 
-Welcome to the central API server for **Be Safe Food AI** — an intelligent backend ecosystem powering real-time food safety scanning, personalized dietary advice, conversational AI, and critical food recall warnings.
+Welcome to the central API server for **Be Safe Food AI** — an intelligent, serverless backend ecosystem powering real-time food safety scanning, personalized dietary advice, conversational AI, and critical food recall warnings.
 
-This codebase is crafted using **100% TypeScript** and is architected under strict **Clean Architecture** patterns, leveraging dependency injection, strict domain isolation, and modular data models to ensure high scale, security, and developer clarity.
+This codebase is crafted using **100% TypeScript** and is optimized to run on **Cloudflare Workers** using the **Hono** framework for high-scale, ultra-low latency, and modern serverless execution.
 
 ---
 
@@ -18,23 +18,23 @@ This codebase is crafted using **100% TypeScript** and is architected under stri
 - 🔍 **AI Ingredient Analysis**: Seamless scanning of food labels to detect harmful additives, calculate safety ratings, and flag health hazards.
 - 💬 **Conversational Health Assistant**: Custom AI-driven chat providing advice personalized to user profiles (allergies, health goals, and medical conditions).
 - ⚠️ **Food Recalls & Push Alerts**: Auto-aggregates global/local food safety warnings, parses source URLs, tracks matching scan history, and broadcasts instant push alerts via Firebase Cloud Messaging (FCM).
-- 🔐 **Secure Authentication**: Integration with Firebase Identity Provider, complete with secure OTP verification via Nodemailer and strict Express rate limiters.
-- ☁️ **Cloud Storage**: Fast, reliable media and scan image hosting via Cloudinary.
+- 🔐 **Secure Authentication**: Integration with Firebase Identity Provider, featuring secure OTP verification via Nodemailer and custom signed tokens using standard Web Crypto APIs.
+- ☁️ **Cloud Storage**: Fast, reliable media and scan image hosting via Cloudflare R2 bucket.
 
 ---
 
 ## ⚙️ Tech Stack & Integrations
 
-| Layer / Integration               | Technology Used                                                                               |
-| :-------------------------------- | :-------------------------------------------------------------------------------------------- |
-| **Runtime & Language**            | Node.js (v20+), TypeScript (Target: ES2022, CommonJS runtime compilation via `tsconfig.json`) |
-| **Server Framework**              | Express.js (v5.x), CORS, Express Rate Limit                                                   |
-| **Dependency Injection**          | `tsyringe` + `reflect-metadata`                                                               |
-| **Database & ORM**                | MySQL, Sequelize ORM                                                                          |
-| **Identity & Push Notifications** | Firebase Admin SDK, Firebase Cloud Messaging (FCM)                                            |
-| **AI Assistants**                 | Groq SDK, Google Generative AI (Gemini SDK)                                                   |
-| **Media Delivery**                | Cloudinary Wrapper Service                                                                    |
-| **Integrations & Scrapers**       | Axios, JSDOM, Mozilla Readability, RSS Parser, Google News URL Decoder                        |
+| Layer / Integration               | Technology Used                                                                        |
+| :-------------------------------- | :------------------------------------------------------------------------------------- |
+| **Runtime & Language**            | Cloudflare Workers, TypeScript (Target: ES2022)                                        |
+| **Server Framework**              | Hono (v4.x) with CORS and built-in routing                                             |
+| **Database & ORM**                | Cloudflare D1 (Serverless SQLite)                                                      |
+| **Cache & OTP States**            | Cloudflare KV Namespace (with native TTL expiration)                                   |
+| **Identity & Push Notifications** | Web Crypto signed assertions (RS256 JWTs), Google OAuth REST API, FCM HTTP v1 REST API |
+| **AI Assistants**                 | Groq SDK, Google Generative AI (Gemini SDK)                                            |
+| **Media Delivery**                | Cloudflare R2 Storage Service (public URL image serving route)                         |
+| **Integrations & Scrapers**       | Axios, JSDOM, Mozilla Readability, RSS Parser, Google News URL Decoder                 |
 
 ---
 
@@ -46,8 +46,7 @@ The project follows a **4-Layer Clean Architecture** enforcing strict dependency
 graph TD
     Client[Client Browser / Mobile App]
     subgraph Web Interfaces
-        Route[Express Router: src/routes]
-        Ctrl[Controllers: src/interfaces/web/controllers]
+        Route[Hono Router: src/routes/index.ts]
         Mid[Middlewares: src/interfaces/web/middlewares]
     end
     subgraph Core Application Business Logic
@@ -59,30 +58,28 @@ graph TD
         RepoInt[Repository Interfaces: src/domain/repositories]
     end
     subgraph Infrastructure Layer
-        SeqRep[Sequelize Repositories: src/infrastructure/repositories]
-        SeqMod[Sequelize Models: src/infrastructure/database/sequelize/models]
-        ExtServ[External Services: Cloudinary, Firebase, Groq, Mail]
+        D1Rep[D1 Repositories: src/infrastructure/repositories]
+        D1Schema[D1 Tables: migrations/schema.sql]
+        ExtServ[External Services: R2, KV, Firebase Web Crypto, Groq, Mail]
     end
 
     Client --> Route
     Route --> Mid
-    Mid --> Ctrl
-    Ctrl --> UC
+    Mid --> UC
     UC --> DomEnt
     UC --> RepoInt
     UC --> ServInt
-    RepoInt -.-> SeqRep
+    RepoInt -.-> D1Rep
     ServInt -.-> ExtServ
-    SeqRep --> SeqMod
+    D1Rep --> D1Schema
 ```
 
 ### Flow of Execution
 
-1.  **Request Input**: The client request passes through the main entry point `src/app.ts` to `src/routes/index.ts`.
-2.  **Routing & Middleware**: Request is filtered by routing path (under `src/interfaces/web/routes`) and middleware (auth, rate limits).
-3.  **Controller Delegation**: The controller parses parameters and invokes a specific, isolated business `UseCase`.
-4.  **UseCase Orchestration**: The `UseCase` interacts with abstract domain repositories and service interfaces to perform business logic.
-5.  **Data & Third-Party Execution**: Concrete implementations in `src/infrastructure` map inputs/outputs from databases or third-party APIs back to Domain entities.
+1.  **Request Input**: The client request passes through the main entry point `src/index.ts` to `src/routes/index.ts`.
+2.  **Routing & Middleware**: Request is filtered by routing path and Hono middlewares (CORS, auth).
+3.  **UseCase Orchestration**: The route handler retrieves instanced use cases from the request-scoped container `src/di/container.ts` and invokes them.
+4.  **Data & Third-Party Execution**: Concrete implementations in `src/infrastructure` map inputs/outputs from D1, KV, R2, or third-party APIs back to Domain entities.
 
 ---
 
@@ -90,37 +87,34 @@ graph TD
 
 ```
 be_safe_food_ai/
-├── dist/                          # Compiled JavaScript outputs (production bundle)
+├── migrations/
+│   └── schema.sql                 # D1 Database SQLite schema configuration
 ├── secrets/                       # Secure certificates & Firebase credentials keys
 ├── src/
-│   ├── app.ts                     # Configures Express middleware, CORS, routing, and global errors
-│   ├── server.ts                  # Server entry point; initializes DB connection, schema sync, and listens
+│   ├── index.ts                   # Main Hono entrypoint (CORS, Logger, Error handlers)
 │   ├── di/
-│   │   └── container.ts           # Central Dependency Injection (tsyringe) registrations
+│   │   └── container.ts           # Request-scoped Dependency injection factory function
 │   ├── domain/                    # Enterprise Core Domain logic (Independent, zero external dependencies)
 │   │   ├── entities/              # Business schemas and typescript types
 │   │   ├── errors/                # Unified custom domain errors
 │   │   └── repositories/          # Interface signatures for database operations
 │   ├── application/               # Core application logic
-│   │   ├── interfaces/            # Service adapters signatures (AI, Mail, Cloudinary, etc.)
+│   │   ├── interfaces/            # Service adapters signatures (AI, Mail, R2 storage, etc.)
 │   │   └── use_cases/             # Executable business rules (one action class per file)
 │   ├── infrastructure/            # Technical adapters and database configuration
-│   │   ├── database/
-│   │   │   └── sequelize/         # Sequelize connection parameters, models, and migration scripts
-│   │   ├── repositories/          # Concrete repository implementations database queries
-│   │   └── services/              # Integrations (Firebase SDK, Cloudinary, Groq AI, Nodemailer)
+│   │   ├── repositories/          # Concrete D1/KV repository implementations
+│   │   └── services/              # Integrations (Firebase Web Crypto, R2 storage, Groq, Nodemailer)
 │   ├── interfaces/                # Web entry point
 │   │   └── web/
-│   │       ├── controllers/       # Express Controllers; maps requests parameters to Use Cases
-│   │       ├── middlewares/       # Express Middleware handlers (auth check, requests validation)
-│   │       └── routes/            # Path routes specific declarations
+│   │       └── middlewares/       # Hono Middleware handlers (JWK verification, auth check)
 │   ├── routes/
 │   │   └── index.ts               # Primary routing registry for mounting paths to `/api/v1`
 │   ├── shared/                    # Constants, common statuses, and utility helpers
 │   └── types/                     # Extra ambient declarations files (*.d.ts)
 ├── models.json                    # Configuration detailing compatible AI engine models
 ├── tsconfig.json                  # Compiler guidelines for TypeScript
-├── package.json                   # Main scripts, engine descriptions, and dependencies
+├── package.json                   # Main scripts and dependencies
+├── wrangler.toml                  # Cloudflare Worker resources binding configuration
 └── AI_GUIDELINES.md               # Onboarding and development guidelines for AI assistants
 ```
 
@@ -131,7 +125,7 @@ be_safe_food_ai/
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) (v20+ recommended)
-- [MySQL Server](https://www.mysql.com/)
+- Cloudflare account logged in via Wrangler (`npx wrangler login`)
 
 ### 1. Clone & Dependencies Installation
 
@@ -143,52 +137,61 @@ npm install
 
 ### 2. Environment Setup
 
-Copy the environment template and customize key-value pairings:
+Create a `.dev.vars` file in the root folder containing the following local secrets:
 
-```bash
-cp .env.example .env
+```env
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_CLIENT_EMAIL=your-client-email
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+GROQ_API_KEY=your-groq-key
+SMTP_HOST=your-smtp-host
+SMTP_PORT=587
+SMTP_USER=your-smtp-user
+SMTP_PASSWORD=your-smtp-password
+SMTP_FROM_EMAIL=your-from-email
+SMTP_FROM_NAME=Safe Food AI
+CRON_SYNC_TOKEN=your-cron-secret-token
 ```
 
-Key configuration properties to populate in `.env`:
+### 3. Database Initialization & Schema Migrations
 
-- **Database Config**: Hostname, Port, DB Name, User Credentials.
-- **Firebase Keys**: Admin project ID, client email, and private key strings.
-- **API Credentials**: Groq API token, Cloudinary configurations, and SMTP email settings.
-
-### 3. Running Database Migrations
-
-Synchronize or run schema adjustments programmatically:
+Run migrations locally to set up the SQLite database emulation:
 
 ```bash
-npm run migrate
+npx wrangler d1 execute safe-food-ai-db --file=migrations/schema.sql --local
+```
+
+To run migrations on the production Cloudflare database:
+
+```bash
+npx wrangler d1 execute safe-food-ai-db --file=migrations/schema.sql --remote
 ```
 
 ---
 
 ## 🚀 Running the Application
 
-### Development Mode (With Hot-Reloading)
+### Development Mode (Local Emulation)
 
-Direct execution of TypeScript source files with file change listening:
+Runs the Hono app locally with live-reloads, binding local D1, KV, and R2 emulation:
 
 ```bash
 npm run dev
 ```
 
-### Production Compiling & Execution
+### Deploying to Cloudflare Workers
 
-Transpiles source modules to JS under `dist/` directory and boots the compiled build:
+Publishes the backend directly to your Cloudflare account:
 
 ```bash
-npm run build
-npm start
+npm run deploy
 ```
 
 ---
 
 ## 🔗 Main API Endpoint Namespaces
 
-All functional endpoints are mounted under `/api/v1`. Below is an overview of the root directories:
+All functional endpoints are mounted under `/api/v1`. Below is an overview of the namespaces:
 
 | Route namespace | Mounting Path     | Primary Purpose                                         |
 | :-------------- | :---------------- | :------------------------------------------------------ |
@@ -199,7 +202,7 @@ All functional endpoints are mounted under `/api/v1`. Below is an overview of th
 | **Scans**       | `/api/v1/scans`   | Image uploads, ingredient matching logic, safety rating |
 | **Profile**     | `/api/v1/profile` | Update dietary types, allergies, health conditions      |
 | **App**         | `/api/v1/app`     | Version status checks and metadata configurations       |
-| **Health**      | `/api/v1/health`  | Service and connection status monitoring                |
+| **Health**      | `/api/v1/health`  | Service status monitoring                               |
 
 ---
 

@@ -394,7 +394,7 @@ api.get('/news/warnings', authMiddleware, async (c) => {
 api.get('/news/cron-sync', async (c) => {
   try {
     const token = c.req.query('token');
-    const expectedToken = c.env.CRON_SYNC_TOKEN || 'safe_food_ai_secret';
+    const expectedToken = c.env.CRON_SYNC_TOKEN || c.env.CRON_SECRET || 'safe_food_ai_secret';
     if (token !== expectedToken) {
       return c.json({ success: false, message: 'Unauthorized. Invalid security token.' }, 401);
     }

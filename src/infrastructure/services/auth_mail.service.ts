@@ -13,11 +13,11 @@ export class AuthMailService implements IMailService {
       secure: false,
       auth: {
         user: env.SMTP_USER,
-        pass: env.SMTP_PASSWORD,
+        pass: env.SMTP_PASSWORD || env.SMTP_PASS,
       },
     });
     this.fromName = env.SMTP_FROM_NAME || 'Safe Food AI';
-    this.fromEmail = env.SMTP_FROM_EMAIL || env.SMTP_USER;
+    this.fromEmail = env.SMTP_FROM_EMAIL || env.SMTP_FROM || env.SMTP_USER;
   }
 
   async sendOtpEmail(toEmail: string, otpCode: string, userName: string): Promise<any> {
